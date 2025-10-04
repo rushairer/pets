@@ -8,6 +8,24 @@ enum PetState {
     Dirty
 }
 
+// 菜单系统枚举
+enum MenuState {
+    Closed,
+    Open
+}
+
+enum MenuItem {
+    Feed,      // 喂食
+    Play,      // 玩耍
+    Heal,      // 治疗
+    Clean,     // 清洁
+    Sleep,     // 睡觉
+    Talk,      // 说话
+    Work,      // 打工
+    Game,      // 互动游戏
+    Shop       // 购物
+}
+
 // 游戏变量
 let pet: Sprite = null
 let hunger = 50
@@ -15,6 +33,7 @@ let happiness = 50
 let health = 50
 let cleanliness = 50
 let energy = 50  // 新增：精力值
+let money = 100  // 新增：金钱系统
 let lastUpdateTime = 0
 let gameRunning = true
 
@@ -22,6 +41,11 @@ let gameRunning = true
 let currentHour = 8  // 当前时间（0-23）
 let isNight = false
 let dayNightCycle = 0
+
+// 菜单系统变量
+let menuState = MenuState.Closed
+let selectedMenuItem = MenuItem.Feed
+let menuSprites: Sprite[] = []
 
 // 根据宠物状态分类的话术数组
 let happyDialogues = [
@@ -105,6 +129,20 @@ let cleanButton: Sprite = null
 // 创建UI种类
 const UIKind = SpriteKind.create()
 const DecorationKind = SpriteKind.create()
+const MenuKind = SpriteKind.create()
+
+// 菜单项数据
+let menuItems = [
+    { name: "喂食", icon: "🍎", action: () => feedPet() },
+    { name: "玩耍", icon: "🎾", action: () => playWithPet() },
+    { name: "治疗", icon: "💊", action: () => healPet() },
+    { name: "清洁", icon: "🛁", action: () => cleanPet() },
+    { name: "睡觉", icon: "😴", action: () => petSleep() },
+    { name: "说话", icon: "💬", action: () => petRandomTalk() },
+    { name: "打工", icon: "💼", action: () => petWork() },
+    { name: "游戏", icon: "🎮", action: () => playMiniGame() },
+    { name: "购物", icon: "🛒", action: () => openShop() }
+]
 
 // 创建背景装饰
 function createBackground() {
@@ -170,7 +208,7 @@ function initGame() {
     
     // 显示欢迎信息
     game.showLongText("欢迎来到电子宠物世界！\n照顾好你的宠物，让它健康快乐地成长！", DialogLayout.Center)
-    game.showLongText("左:喂食 上:玩耍\n右:治疗 下:清洁", DialogLayout.Bottom)
+    game.showLongText("按 Menu 键打开菜单\n方向键选择，A确认，B返回", DialogLayout.Bottom)
 
     // 开始游戏循环
     lastUpdateTime = game.runtime()
@@ -240,6 +278,9 @@ function updateStatusBars() {
     let dayNightStr = isNight ? "夜晚" : "白天"
     screen.print(timeStr + " " + dayNightStr, 5, 12, isNight ? 9 : 5)
     
+    // 显示金钱
+    screen.print("金钱: " + money, 90, 12, 5)
+    
     // 饥饿度条 (红色)
     hungerBar.image.fill(0)
     hungerBar.image.fillRect(0, 0, Math.floor(hunger * 28 / 100), 4, 2)
@@ -261,8 +302,9 @@ function updateStatusBars() {
     energyBar.image.fillRect(0, 0, Math.floor(energy * 28 / 100), 4, 8)
     
     // 底部操作提示
-    screen.print("左:喂食 上:玩耍 右:治疗 下:清洁", 5, 107, 1)
-    screen.print("A:睡觉 B:说话", 5, 115, 1)
+    if (menuState == MenuState.Closed) {
+        screen.print("按 Menu 键打开菜单", 40, 115, 1)
+    }
 }
 
 // 开始宠物动画
@@ -538,34 +580,271 @@ function petRandomTalk() {
     music.playTone(294, 300)
 }
 
+// 显示菜单
+function showMenu() {
+    if (menuState == MenuState.Open) return
+    
+    menuState = MenuState.Open
+    selectedMenuItem = MenuItem.Feed
+    
+    // 创建全屏菜单背景
+    let menuBg = sprites.create(image.create(160, 120), MenuKind)
+    menuBg.image.fill(1)  // 深蓝色外框
+    menuBg.image.fillRect(3, 3, 154, 114, 15)  // 白色边框
+    menuBg.image.fillRect(6, 6, 148, 108, 9)   // 浅蓝色背景
+    menuBg.setPosition(80, 60)
+    menuSprites.push(menuBg)
+    
+    createMenuSprites()
+}
+
+// 创建菜单精灵
+function createMenuSprites() {
+    // 清除旧的菜单文字精灵（保留背景）
+    for (let i = menuSprites.length - 1; i >= 1; i--) {
+        menuSprites[i].destroy()
+        menuSprites.splice(i, 1)
+    }
+    
+    // 创建标题精灵 - 向上移动
+    let titleImg = image.create(80, 15)
+    titleImg.fill(9)  // 浅蓝色背景
+    titleImg.print("宠物菜单", 10, 0, 15)  // 白色文字，增加垂直间距
+    let titleSprite = sprites.create(titleImg, MenuKind)
+    titleSprite.setPosition(80, 18)
+    menuSprites.push(titleSprite)
+    
+    // 创建菜单项精灵 - 3x3网格，再增大行高
+    for (let i = 0; i < menuItems.length; i++) {
+        let row = Math.floor(i / 3)
+        let col = i % 3
+        let y = 35 + row * 25  // 再增加行高到25
+        let x = 40 + col * 40
+        
+        let itemImg = image.create(30, 18)  // 再增加高度到18
+        itemImg.fill(0)
+        
+        if (i == selectedMenuItem) {
+            // 选中项：红色背景，白色文字，添加箭头
+            itemImg.fill(2)  // 红色背景
+            itemImg.print(menuItems[i].name, 2, 2, 1)  // 白色文字，调整位置
+        } else {
+            // 普通项：浅蓝色背景，深蓝色文字
+            itemImg.fill(9)  // 浅蓝色背景
+            itemImg.print(menuItems[i].name, 2, 2, 8)  // 深蓝色文字，调整位置
+        }
+        
+        let itemSprite = sprites.create(itemImg, MenuKind)
+        itemSprite.setPosition(x, y)
+        menuSprites.push(itemSprite)
+    }
+    
+    // 创建金钱显示精灵 - 移到左下角
+    let moneyImg = image.create(120, 18)
+    moneyImg.fill(9)  // 浅蓝色背景
+    moneyImg.print("金钱:" + money, 2, 5, 5)  // 黄色文字，调整位置
+    let moneySprite = sprites.create(moneyImg, MenuKind)
+    moneySprite.setPosition(70, 103)  // 移到左下角
+    menuSprites.push(moneySprite)
+}
+
+// 更新菜单显示内容
+function updateMenuDisplay() {
+    if (menuState == MenuState.Closed) return
+    
+    // 重新创建菜单精灵以反映选择变化
+    createMenuSprites()
+}
+
+// 隐藏菜单
+function hideMenu() {
+    if (menuState == MenuState.Closed) return
+    
+    menuState = MenuState.Closed
+    
+    // 销毁所有菜单精灵
+    sprites.destroyAllSpritesOfKind(MenuKind)
+    menuSprites = []
+    
+    // 清空屏幕文字并重新绘制游戏UI
+    screen.fillRect(0, 0, 160, 120, 0)
+    updateStatusBars()
+}
+
+// 更新菜单选择
+function updateMenuSelection() {
+    if (menuState == MenuState.Closed) return
+    updateMenuDisplay()
+}
+
+// 执行菜单选择
+function executeMenuItem() {
+    if (menuState == MenuState.Closed) return
+    
+    hideMenu()
+    menuItems[selectedMenuItem].action()
+}
+
+// 新增功能：宠物打工
+function petWork() {
+    if (energy < 20) {
+        game.splash("精力不足，无法工作！")
+        pet.sayText("我太累了，需要休息...", 2000, false)
+        return
+    }
+    
+    // 消耗精力，获得金钱
+    energy = Math.max(0, energy - 20)
+    let earnedMoney = randint(10, 30)
+    money += earnedMoney
+    
+    // 显示工作动画
+    animation.stopAnimation(animation.AnimationTypes.All, pet)
+    pet.setImage(assets.image`petPlaying`)  // 使用玩耍图片表示工作
+    
+    updateStatusBars()
+    
+    game.splash("工作赚取 " + earnedMoney + " 金币！")
+    pet.sayText("工作真辛苦，但是赚到钱了！", 2000, false)
+    
+    music.playTone(440, 300)
+    
+    // 2秒后恢复正常状态
+    setTimeout(() => {
+        updatePetState()
+    }, 2000)
+}
+
+// 新增功能：互动小游戏
+function playMiniGame() {
+    game.splash("石头剪刀布！")
+    
+    let playerChoice = game.askForNumber("选择：1=石头 2=剪刀 3=布", 1)
+    if (playerChoice < 1 || playerChoice > 3) {
+        game.splash("无效选择！")
+        return
+    }
+    
+    let petChoice = randint(1, 3)
+    let choices = ["", "石头", "剪刀", "布"]
+    
+    pet.sayText("我选择" + choices[petChoice] + "！", 2000, false)
+    
+    let result = ""
+    let reward = 0
+    
+    if (playerChoice == petChoice) {
+        result = "平局！"
+        reward = 5
+    } else if ((playerChoice == 1 && petChoice == 2) ||
+               (playerChoice == 2 && petChoice == 3) ||
+               (playerChoice == 3 && petChoice == 1)) {
+        result = "你赢了！"
+        reward = 15
+        happiness = Math.min(100, happiness + 10)
+    } else {
+        result = "我赢了！"
+        reward = 3
+        happiness = Math.min(100, happiness + 5)
+    }
+    
+    money += reward
+    updateStatusBars()
+    
+    game.splash(result + " 获得 " + reward + " 金币！")
+    music.playTone(523, 400)
+}
+
+// 新增功能：购物系统
+function openShop() {
+    let shopItems = [
+        { name: "高级食物", price: 50, effect: () => { hunger = Math.min(100, hunger + 40); game.splash("饥饿度大幅提升！") } },
+        { name: "玩具", price: 30, effect: () => { happiness = Math.min(100, happiness + 30); game.splash("快乐度大幅提升！") } },
+        { name: "维生素", price: 40, effect: () => { health = Math.min(100, health + 50); game.splash("健康度大幅提升！") } },
+        { name: "能量饮料", price: 35, effect: () => { energy = Math.min(100, energy + 60); game.splash("精力大幅提升！") } }
+    ]
+    
+    let shopText = "欢迎来到宠物商店！\n当前金钱: " + money + "\n\n"
+    for (let i = 0; i < shopItems.length; i++) {
+        shopText += (i + 1) + ". " + shopItems[i].name + " - " + shopItems[i].price + "金币\n"
+    }
+    shopText += "\n选择要购买的物品 (1-" + shopItems.length + ")，0退出"
+    
+    let choice = game.askForNumber(shopText, 0)
+    
+    if (choice >= 1 && choice <= shopItems.length) {
+        let item = shopItems[choice - 1]
+        if (money >= item.price) {
+            money -= item.price
+            item.effect()
+            updateStatusBars()
+            music.playTone(659, 300)
+        } else {
+            game.splash("金钱不足！")
+        }
+    }
+}
+
 // 按钮点击处理
 sprites.onOverlap(SpriteKind.Player, UIKind, (sprite, otherSprite) => {
     // 这里不处理重叠，而是通过按键处理
 })
 
-// 控制器输入处理
-controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
-    feedPet()
+// 新的控制器输入处理 - 菜单系统
+controller.menu.onEvent(ControllerButtonEvent.Pressed, () => {
+    if (menuState == MenuState.Closed) {
+        showMenu()
+    } else {
+        hideMenu()
+    }
 })
 
-controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
-    playWithPet()
+controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
+    if (menuState == MenuState.Open) {
+        if (selectedMenuItem > 0) {
+            selectedMenuItem--
+            updateMenuSelection()
+        }
+    }
 })
 
 controller.right.onEvent(ControllerButtonEvent.Pressed, () => {
-    healPet()
+    if (menuState == MenuState.Open) {
+        if (selectedMenuItem < menuItems.length - 1) {
+            selectedMenuItem++
+            updateMenuSelection()
+        }
+    }
+})
+
+controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
+    if (menuState == MenuState.Open) {
+        if (selectedMenuItem >= 3) {
+            selectedMenuItem -= 3
+            updateMenuSelection()
+        }
+    }
 })
 
 controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
-    cleanPet()
+    if (menuState == MenuState.Open) {
+        if (selectedMenuItem + 3 < menuItems.length) {
+            selectedMenuItem += 3
+            updateMenuSelection()
+        }
+    }
 })
 
 controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
-    petSleep()
+    if (menuState == MenuState.Open) {
+        executeMenuItem()
+    }
 })
 
 controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
-    petRandomTalk()
+    if (menuState == MenuState.Open) {
+        hideMenu()
+    }
 })
 
 // 游戏主循环 - 状态自动衰减
