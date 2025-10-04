@@ -1,0 +1,22 @@
+{
+    "name": "电子宠物饲养游戏",
+    "description": "一个基于MakeCode Arcade开发的电子宠物饲养游戏，玩家需要照顾宠物的饥饿、快乐、健康和清洁状态。",
+    "dependencies": {
+        "device": "*"
+    },
+    "files": [
+        "main.ts",
+        "README.md",
+        "assets.json",
+        "images.g.jres",
+        "images.g.ts"
+    ],
+    "targetVersions": {
+        "branch": "v1.12.25",
+        "tag": "v1.12.25",
+        "commits": "https://github.com/microsoft/pxt-arcade/commits/e2750e18d567167d5fc4f7c49e2a64cc55da9d18",
+        "target": "1.12.25",
+        "pxt": "8.5.36"
+    },
+    "preferredEditor": "tsprj"
+}
