@@ -114,7 +114,8 @@ function createBackground() {
 // 更新昼夜背景
 function updateDayNightBackground() {
     if (isNight) {
-        // 夜晚背景 - 深蓝色纯色背景
+        // 夜晚背景 - 先清除背景图片，再设置深蓝色纯色背景
+        scene.setBackgroundImage(null)
         scene.setBackgroundColor(8)
         // 添加星星效果
         for (let i = 0; i < 8; i++) {
@@ -184,39 +185,39 @@ function createUI() {
     // 状态条背景 - 顶部两行
     let barBg1 = sprites.create(image.create(30, 6), UIKind)
     barBg1.image.fill(15)
-    barBg1.setPosition(18, 4)
+    barBg1.setPosition(16, 4)
     
     let barBg2 = sprites.create(image.create(30, 6), UIKind)
     barBg2.image.fill(15)
-    barBg2.setPosition(50, 4)
+    barBg2.setPosition(48, 4)
     
     let barBg3 = sprites.create(image.create(30, 6), UIKind)
     barBg3.image.fill(15)
-    barBg3.setPosition(82, 4)
+    barBg3.setPosition(80, 4)
     
     let barBg4 = sprites.create(image.create(30, 6), UIKind)
     barBg4.image.fill(15)
-    barBg4.setPosition(114, 4)
+    barBg4.setPosition(112, 4)
     
     let barBg5 = sprites.create(image.create(30, 6), UIKind)
     barBg5.image.fill(15)
-    barBg5.setPosition(146, 4)
+    barBg5.setPosition(144, 4)
     
     // 状态条 - 顶部两行
     hungerBar = sprites.create(image.create(28, 4), UIKind)
-    hungerBar.setPosition(18, 4)
+    hungerBar.setPosition(16, 4)
     
     happinessBar = sprites.create(image.create(28, 4), UIKind)
-    happinessBar.setPosition(50, 4)
+    happinessBar.setPosition(48, 4)
     
     healthBar = sprites.create(image.create(28, 4), UIKind)
-    healthBar.setPosition(82, 4)
+    healthBar.setPosition(80, 4)
     
     cleanlinessBar = sprites.create(image.create(28, 4), UIKind)
-    cleanlinessBar.setPosition(114, 4)
+    cleanlinessBar.setPosition(112, 4)
     
     energyBar = sprites.create(image.create(28, 4), UIKind)
-    energyBar.setPosition(146, 4)
+    energyBar.setPosition(144, 4)
     
     updateStatusBars()
 }
@@ -228,11 +229,11 @@ function updateStatusBars() {
     screen.fillRect(0, 105, 160, 15, 0)
     
     // 绘制状态标签 - 顶部一行
-    screen.print("饥饿", 6, 2, 1)
-    screen.print("快乐", 38, 2, 1)
-    screen.print("健康", 70, 2, 1)
-    screen.print("清洁", 102, 2, 1)
-    screen.print("精力", 134, 2, 1)
+    screen.print("饥饿", 4, 2, 1)
+    screen.print("快乐", 36, 2, 1)
+    screen.print("健康", 68, 2, 1)
+    screen.print("清洁", 100, 2, 1)
+    screen.print("精力", 132, 2, 1)
     
     // 显示时间和昼夜状态
     let timeStr = currentHour + ":00"
