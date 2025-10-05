@@ -138,6 +138,35 @@ function resetDefaults() {
     claimed_a_money1000 = false
     claimed_a_money2000 = false
 
+     // 更高等级与金钱成就重置
+    claimed_a_money5000 = false
+    claimed_a_lvl20 = false
+    claimed_a_lvl25 = false
+    claimed_a_lvl30 = false
+    claimed_a_lvl35 = false
+    claimed_a_lvl40 = false
+    claimed_a_lvl45 = false
+    claimed_a_lvl50 = false
+    // 累计500次成就重置
+    claimed_a_feed500 = false
+    claimed_a_play500 = false
+    claimed_a_heal500 = false
+    claimed_a_clean500 = false
+    claimed_a_work500 = false
+    claimed_a_game500 = false
+    claimed_a_shop500 = false
+    claimed_a_sleep500 = false
+
+    // 累计计数清零
+    totalFeed = 0
+    totalPlay = 0
+    totalHeal = 0
+    totalClean = 0
+    totalWork = 0
+    totalGame = 0
+    totalShop = 0
+    totalSleep = 0
+
     currentHour = 8
     isNight = false
     dayNightCycle = 0
@@ -176,6 +205,16 @@ function saveProgress() {
     settings.writeNumber("daily_work", dailyWork)
     settings.writeNumber("weekly_work", weeklyWork)
     settings.writeNumber("weekly_rps_win", weeklyRpsWin)
+    // 保存累计计数
+    settings.writeNumber("total_feed", totalFeed)
+    settings.writeNumber("total_play", totalPlay)
+    settings.writeNumber("total_heal", totalHeal)
+    settings.writeNumber("total_clean", totalClean)
+    settings.writeNumber("total_work", totalWork)
+    settings.writeNumber("total_game", totalGame)
+    settings.writeNumber("total_shop", totalShop)
+    settings.writeNumber("total_sleep", totalSleep)
+
     settings.writeNumber("claimed_d_feed3", claimed_d_feed3 ? 1 : 0)
     settings.writeNumber("claimed_d_play2", claimed_d_play2 ? 1 : 0)
     settings.writeNumber("claimed_d_clean1", claimed_d_clean1 ? 1 : 0)
@@ -201,6 +240,15 @@ function saveProgress() {
     settings.writeNumber("claimed_a_lvl40", claimed_a_lvl40 ? 1 : 0)
     settings.writeNumber("claimed_a_lvl45", claimed_a_lvl45 ? 1 : 0)
     settings.writeNumber("claimed_a_lvl50", claimed_a_lvl50 ? 1 : 0)
+    // 保存累计500次成就领奖标记
+    settings.writeNumber("claimed_a_feed500", claimed_a_feed500 ? 1 : 0)
+    settings.writeNumber("claimed_a_play500", claimed_a_play500 ? 1 : 0)
+    settings.writeNumber("claimed_a_heal500", claimed_a_heal500 ? 1 : 0)
+    settings.writeNumber("claimed_a_clean500", claimed_a_clean500 ? 1 : 0)
+    settings.writeNumber("claimed_a_work500", claimed_a_work500 ? 1 : 0)
+    settings.writeNumber("claimed_a_game500", claimed_a_game500 ? 1 : 0)
+    settings.writeNumber("claimed_a_shop500", claimed_a_shop500 ? 1 : 0)
+    settings.writeNumber("claimed_a_sleep500", claimed_a_sleep500 ? 1 : 0)
 }
 
 function loadProgress() {
@@ -248,6 +296,24 @@ function loadProgress() {
     const dw = settings.readNumber("daily_work"); if (dw || dw == 0) dailyWork = dw
     const ww = settings.readNumber("weekly_work"); if (ww || ww == 0) weeklyWork = ww
     const wr = settings.readNumber("weekly_rps_win"); if (wr || wr == 0) weeklyRpsWin = wr
+    // 读取累计计数
+    const tf = settings.readNumber("total_feed"); if (tf || tf == 0) totalFeed = tf
+    const tp = settings.readNumber("total_play"); if (tp || tp == 0) totalPlay = tp
+    const th = settings.readNumber("total_heal"); if (th || th == 0) totalHeal = th
+    const tc = settings.readNumber("total_clean"); if (tc || tc == 0) totalClean = tc
+    const tw = settings.readNumber("total_work"); if (tw || tw == 0) totalWork = tw
+    const tg = settings.readNumber("total_game"); if (tg || tg == 0) totalGame = tg
+    const ts = settings.readNumber("total_shop"); if (ts || ts == 0) totalShop = ts
+    const tsl = settings.readNumber("total_sleep"); if (tsl || tsl == 0) totalSleep = tsl
+     // 保存累计计数
+    settings.writeNumber("total_feed", totalFeed)
+    settings.writeNumber("total_play", totalPlay)
+    settings.writeNumber("total_heal", totalHeal)
+    settings.writeNumber("total_clean", totalClean)
+    settings.writeNumber("total_work", totalWork)
+    settings.writeNumber("total_game", totalGame)
+    settings.writeNumber("total_shop", totalShop)
+    settings.writeNumber("total_sleep", totalSleep)
 
     claimed_d_feed3 = settings.readNumber("claimed_d_feed3") == 1
     claimed_d_play2 = settings.readNumber("claimed_d_play2") == 1
@@ -274,6 +340,15 @@ function loadProgress() {
     claimed_a_lvl40 = settings.readNumber("claimed_a_lvl40") == 1
     claimed_a_lvl45 = settings.readNumber("claimed_a_lvl45") == 1
     claimed_a_lvl50 = settings.readNumber("claimed_a_lvl50") == 1
+    // 读取累计500次成就领奖标记
+    claimed_a_feed500 = settings.readNumber("claimed_a_feed500") == 1
+    claimed_a_play500 = settings.readNumber("claimed_a_play500") == 1
+    claimed_a_heal500 = settings.readNumber("claimed_a_heal500") == 1
+    claimed_a_clean500 = settings.readNumber("claimed_a_clean500") == 1
+    claimed_a_work500 = settings.readNumber("claimed_a_work500") == 1
+    claimed_a_game500 = settings.readNumber("claimed_a_game500") == 1
+    claimed_a_shop500 = settings.readNumber("claimed_a_shop500") == 1
+    claimed_a_sleep500 = settings.readNumber("claimed_a_sleep500") == 1
 }
 
 // 昼夜系统变量
@@ -877,6 +952,7 @@ function feedPet() {
 
         // 计数与反馈
         dailyFeed++
+        totalFeed++
         // 显示反馈
         game.showLongText("+20 饥饿度\n(剩余食物:" + foodCount + ")", DialogLayout.Bottom)
         pet.sayText("好香啊！谢谢主人！", 1500, false)
@@ -907,6 +983,7 @@ function playWithPet() {
 
         // 计数与反馈
         dailyPlay++
+        totalPlay++
         // 显示反馈
         game.splash("+25 快乐度")
 
@@ -933,6 +1010,7 @@ function healPet() {
 
         // 计数与反馈
         dailyHeal++
+        totalHeal++
         // 显示反馈
         game.showLongText("+30 健康度\n(剩余药物:" + medicineCount + ")", DialogLayout.Bottom)
         pet.sayText("药物真有效！感觉好多了！", 1500, false)
@@ -954,6 +1032,7 @@ function cleanPet() {
 
         // 计数与反馈
         dailyClean++
+        totalClean++
         // 显示反馈
         game.splash("+35 清洁度")
 
@@ -1019,6 +1098,7 @@ function petSleep() {
 function stopSleepMode() {
     if (!sleeping) return
     sleeping = false
+    totalSleep++
     animation.stopAnimation(animation.AnimationTypes.All, pet)
     updatePetState()
     if (pet) pet.sayText("我醒啦！", 800, false)
@@ -1165,6 +1245,7 @@ function petWork() {
     gainXP(12)
     dailyWork++
     weeklyWork++
+    totalWork++
 
     // 显示工作动画
     animation.stopAnimation(animation.AnimationTypes.All, pet)
@@ -1336,6 +1417,7 @@ function executeGameChoice() {
     money += reward
     gainXP(reward == 15 ? 10 : (reward == 5 ? 3 : 2))
     updateStatusBars()
+    totalGame++
 
     game.splash(result + " 获得 " + reward + " 金币！")
     music.playTone(523, 400)
@@ -1364,6 +1446,15 @@ let dailyWork = 0
 // 每周计数
 let weeklyWork = 0
 let weeklyRpsWin = 0
+// 累计计数（成就用）
+let totalFeed = 0
+let totalPlay = 0
+let totalHeal = 0
+let totalClean = 0
+let totalWork = 0
+let totalGame = 0
+let totalShop = 0
+let totalSleep = 0
 
 // 成就（无需计数，直接由条件判断）：Lv3、Lv5、钱500
 
@@ -1395,6 +1486,15 @@ let claimed_a_lvl35 = false
 let claimed_a_lvl40 = false
 let claimed_a_lvl45 = false
 let claimed_a_lvl50 = false
+// 累计500次成就领取标记
+let claimed_a_feed500 = false
+let claimed_a_play500 = false
+let claimed_a_heal500 = false
+let claimed_a_clean500 = false
+let claimed_a_work500 = false
+let claimed_a_game500 = false
+let claimed_a_shop500 = false
+let claimed_a_sleep500 = false
 
 // 等级菜单交互状态
 let levelTab = 0 // 0=每日 1=每周 2=成就
@@ -1570,7 +1670,31 @@ function getAchievementTasks(): Task[] {
             id: "a_money5000", title: "金钱达到5000", target: 1,
             progress: money >= 5000 ? 1 : 0, rewardXP: 0, rewardMoney: 800,
             claimed: claimed_a_money5000, canClaim: money >= 5000 && !claimed_a_money5000
-        }
+        },
+        { id: "a_feed500", title: "大胃王", target: 500,
+          progress: Math.min(500, totalFeed), rewardXP: 0, rewardMoney: 800,
+          claimed: claimed_a_feed500, canClaim: totalFeed >= 500 && !claimed_a_feed500 },
+        { id: "a_play500", title: "嘻嘻哈哈", target: 500,
+          progress: Math.min(500, totalPlay), rewardXP: 0, rewardMoney: 800,
+          claimed: claimed_a_play500, canClaim: totalPlay >= 500 && !claimed_a_play500 },
+        { id: "a_heal500", title: "病秧子", target: 500,
+          progress: Math.min(500, totalHeal), rewardXP: 0, rewardMoney: 800,
+          claimed: claimed_a_heal500, canClaim: totalHeal >= 500 && !claimed_a_heal500 },
+        { id: "a_clean500", title: "爱干净", target: 500,
+          progress: Math.min(500, totalClean), rewardXP: 0, rewardMoney: 800,
+          claimed: claimed_a_clean500, canClaim: totalClean >= 500 && !claimed_a_clean500 },
+        { id: "a_work500", title: "打工皇帝", target: 500,
+          progress: Math.min(500, totalWork), rewardXP: 0, rewardMoney: 800,
+          claimed: claimed_a_work500, canClaim: totalWork >= 500 && !claimed_a_work500 },
+        { id: "a_game500", title: "猜拳高手", target: 500,
+          progress: Math.min(500, totalGame), rewardXP: 0, rewardMoney: 800,
+          claimed: claimed_a_game500, canClaim: totalGame >= 500 && !claimed_a_game500 },
+        { id: "a_shop500", title: "购物狂", target: 500,
+          progress: Math.min(500, totalShop), rewardXP: 0, rewardMoney: 800,
+          claimed: claimed_a_shop500, canClaim: totalShop >= 500 && !claimed_a_shop500 },
+        { id: "a_sleep500", title: "睡美人", target: 500,
+          progress: Math.min(500, totalSleep), rewardXP: 0, rewardMoney: 800,
+          claimed: claimed_a_sleep500, canClaim: totalSleep >= 500 && !claimed_a_sleep500 }
     ]
 }
 
@@ -1617,6 +1741,14 @@ function setClaimedById(id: string) {
         case "a_lvl40": claimed_a_lvl40 = true; break
         case "a_lvl45": claimed_a_lvl45 = true; break
         case "a_lvl50": claimed_a_lvl50 = true; break
+        case "a_feed500": claimed_a_feed500 = true; break
+        case "a_play500": claimed_a_play500 = true; break
+        case "a_heal500": claimed_a_heal500 = true; break
+        case "a_clean500": claimed_a_clean500 = true; break
+        case "a_work500": claimed_a_work500 = true; break
+        case "a_game500": claimed_a_game500 = true; break
+        case "a_shop500": claimed_a_shop500 = true; break
+        case "a_sleep500": claimed_a_sleep500 = true; break
     }
 }
 
@@ -1935,6 +2067,8 @@ function executePurchase() {
         }
 
         music.playTone(659, 300)
+        totalShop++
+
         updateStatusBars()
         updateShopMenuDisplay()  // 更新显示金钱
     } else {
