@@ -1337,27 +1337,27 @@ function getDailyTasks(): Task[] {
     return [
         {
             id: "d_feed3", title: "喂食 3 次", target: 3,
-            progress: dailyFeed, rewardXP: 10, rewardMoney: 10,
+            progress: dailyFeed, rewardXP: 10, rewardMoney: 20,
             claimed: claimed_d_feed3, canClaim: dailyFeed >= 3 && !claimed_d_feed3
         },
         {
             id: "d_play2", title: "玩耍 2 次", target: 2,
-            progress: dailyPlay, rewardXP: 10, rewardMoney: 10,
+            progress: dailyPlay, rewardXP: 10, rewardMoney: 20,
             claimed: claimed_d_play2, canClaim: dailyPlay >= 2 && !claimed_d_play2
         },
         {
             id: "d_clean1", title: "清洁 1 次", target: 1,
-            progress: dailyClean, rewardXP: 10, rewardMoney: 10,
+            progress: dailyClean, rewardXP: 10, rewardMoney: 15,
             claimed: claimed_d_clean1, canClaim: dailyClean >= 1 && !claimed_d_clean1
         },
         {
             id: "d_heal1", title: "治疗 1 次", target: 1,
-            progress: dailyHeal, rewardXP: 10, rewardMoney: 10,
+            progress: dailyHeal, rewardXP: 10, rewardMoney: 20,
             claimed: claimed_d_heal1, canClaim: dailyHeal >= 1 && !claimed_d_heal1
         },
         {
             id: "d_work1", title: "打工 1 次", target: 1,
-            progress: dailyWork, rewardXP: 10, rewardMoney: 10,
+            progress: dailyWork, rewardXP: 10, rewardMoney: 30,
             claimed: claimed_d_work1, canClaim: dailyWork >= 1 && !claimed_d_work1
         }
     ]
@@ -1367,12 +1367,12 @@ function getWeeklyTasks(): Task[] {
     return [
         {
             id: "w_work5", title: "本周打工 5 次", target: 5,
-            progress: weeklyWork, rewardXP: 20, rewardMoney: 50,
+            progress: weeklyWork, rewardXP: 20, rewardMoney: 120,
             claimed: claimed_w_work5, canClaim: weeklyWork >= 5 && !claimed_w_work5
         },
         {
             id: "w_rps3", title: "本周猜拳胜利 3 次", target: 3,
-            progress: weeklyRpsWin, rewardXP: 30, rewardMoney: 0,
+            progress: weeklyRpsWin, rewardXP: 30, rewardMoney: 80,
             claimed: claimed_w_rps3, canClaim: weeklyRpsWin >= 3 && !claimed_w_rps3
         }
     ]
@@ -1392,7 +1392,7 @@ function getAchievementTasks(): Task[] {
         },
         {
             id: "a_money500", title: "金钱达到 500", target: 1,
-            progress: money >= 500 ? 1 : 0, rewardXP: 0, rewardMoney: 0,
+            progress: money >= 500 ? 1 : 0, rewardXP: 0, rewardMoney: 150,
             claimed: claimed_a_money500, canClaim: money >= 500 && !claimed_a_money500
         }
     ]
