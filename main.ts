@@ -55,6 +55,7 @@ let gameRunning = true
 // 睡眠模式标志：通过菜单进入睡觉后置为 true，按 B 唤醒或精力满则结束
 const SLEEP_MAX_MS = 30000
 let sleeping = false
+let sleepSayToggle = true
 
 // 新增：难度与昵称配置
 let currentDifficulty: Difficulty = Difficulty.Normal
@@ -892,16 +893,15 @@ function petSleep() {
     // 停止当前动画并进入睡觉动画
     animation.stopAnimation(animation.AnimationTypes.All, pet)
     pet.setImage(assets.image`petSleeping`)
-    animation.runImageAnimation(pet, assets.animation`petSleepAnimation`, 2000, true)
+    animation.runImageAnimation(pet, assets.animation`petSleepAnimation`, 800, true)
     // 保活睡觉动画：若被意外打断，每秒恢复一次
     const keepSleepAnim = () => {
         if (!sleeping || !pet) return
-        pet.setImage(assets.image`petSleeping`)
-        animation.runImageAnimation(pet, assets.animation`petSleepAnimation`, 2000, true)
+        animation.runImageAnimation(pet, assets.animation`petSleepAnimation`, 800, true)
         setTimeout(keepSleepAnim, 1000)
     }
     setTimeout(keepSleepAnim, 1000)
-    pet.sayText("ZzZ...", 1000, false)
+
     music.playTone(196, 200)
     // 每秒缓慢恢复精力与少量健康，直到满或被唤醒
     const tick = () => {
@@ -1193,7 +1193,12 @@ function updateGameMenuDisplay() {
 // 更新等级菜单
 function updateLevelMenuDisplay() {
     if (levelMenuState == MenuState.Closed) return
-    sprites.destroyAllSpritesOfKind(MenuKind)
+    // 仅重建等级菜单的局部精灵，避免销毁并重建整个菜单导致白屏
+    for (let s of levelMenuSprites) {
+        s.destroy()
+    }
+    levelMenuSprites = []
+    // 标记为关闭以允许 showLevelMenu 重建
     levelMenuState = MenuState.Closed
     showLevelMenu()
 }
@@ -2048,6 +2053,10 @@ function gameOver() {
 game.onUpdateInterval(1000, () => {
     if (gameRunning && pet && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
         updateStatusBars()
+        if (sleeping) {
+            pet.sayText(sleepSayToggle ? "ZzZ..." : "zZz...", 1000, false)
+            sleepSayToggle = !sleepSayToggle
+        }
     }
 })
 
