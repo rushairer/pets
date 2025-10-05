@@ -583,7 +583,7 @@ f 5 5 5 5 5 5 2 2 5 5 5 5 5 5 f
 . . . . . . . . . . . . . . . . 
 `;
             case "rockIcon":
-            case "image17":return img`
+            case "rockIcon0":return img`
 . . . . . 1 1 1 1 1 . . . . . . 
 . . . . 1 4 4 4 4 4 1 . . . . . 
 . . . 1 4 4 4 4 4 4 4 1 . . . . 
@@ -676,6 +676,51 @@ f 5 5 5 5 5 5 2 2 5 5 5 5 5 5 f
 . . f 5 5 5 5 5 5 5 5 5 5 f . . 
 . . . f f 5 5 5 5 5 5 f f . . . 
 . . . . . f f f f f f . . . . . 
+`;
+            case "hungerIcon6":
+            case "image20":return img`
+2 2 . . 2 2 
+2 2 . . 2 2 
+2 2 2 2 2 2 
+2 2 2 2 2 2 
+. 2 2 2 2 . 
+. . 2 2 . . 
+`;
+            case "happyIcon6":
+            case "happyIcon0":return img`
+. . 5 5 . . 
+. 5 5 5 5 . 
+5 2 5 5 2 5 
+5 5 2 2 5 5 
+. 5 5 5 5 . 
+. . 5 5 . . 
+`;
+            case "healthIcon6":
+            case "healthIcon0":return img`
+. . . f f f 
+. . f 2 2 f 
+. f 5 2 2 f 
+f 5 5 2 f . 
+f 5 5 f . . 
+. f f . . . 
+`;
+            case "cleanIcon6":
+            case "cleanIcon0":return img`
+f . f f . f 
+f . f f . f 
+f . f f . f 
+f f f f f f 
+. f f f f . 
+. . f f . . 
+`;
+            case "energyIcon6":
+            case "energyIcon0":return img`
+. . . . . . 
+c c c c c . 
+. . . c . . 
+. . c . . . 
+. c c c c c 
+. . . . . . 
 `;
         }
         return null;

@@ -251,50 +251,7 @@ let dirtyDialogues = [
     "干净的感觉真好！"
 ]
 
-/**
- * 顶部6x6状态小图标（内联）
- * 颜色参考：饥饿=红(2)、快乐=黄(5)、健康=绿(7)、清洁=蓝(9)、精力=紫(8)
- */
-const hungerIcon6 = img`
-. f f f . .
-f f f f f .
-f f f f f f
-f f f f f f
-. f f f f .
-. . f f . .
-`
-const happyIcon6 = img`
-. f f f . .
-f . . . f .
-f . f . f .
-f . . . f .
-. f f f . .
-. . . . . .
-`
-const healthIcon6 = img`
-. f . f . .
-f f f f f .
-. f f f . .
-. . f . . .
-. . f . . .
-. . . . . .
-`
-const cleanIcon6 = img`
-f f f f f .
-f . . . f .
-f . f . f .
-f . . . f .
-f f f f f .
-. . . . . .
-`
-const energyIcon6 = img`
-. f f f . .
-f . . . f .
-f . f . f .
-f . . . f .
-. f f f . .
-. . . . . .
-`
+/* 6x6 状态小图标迁移到 images.g.ts（myImages） */
 
 // UI元素
 let hungerBar: Sprite = null
@@ -508,11 +465,11 @@ function updateStatusBars() {
     // 顶部状态图标（6x6）放在“原始状态条的左边缘”
     if (topTextSprite) {
         // 原始bar左边缘：C-14 -> [1, 33, 65, 97, 129]（整体左移1，下移1）
-        topTextSprite.image.drawTransparentImage(hungerIcon6, 1, 2)
-        topTextSprite.image.drawTransparentImage(happyIcon6, 33, 2)
-        topTextSprite.image.drawTransparentImage(healthIcon6, 65, 2)
-        topTextSprite.image.drawTransparentImage(cleanIcon6, 97, 2)
-        topTextSprite.image.drawTransparentImage(energyIcon6, 129, 2)
+        topTextSprite.image.drawTransparentImage(assets.image`hungerIcon6`, 0, 2)
+        topTextSprite.image.drawTransparentImage(assets.image`happyIcon6`, 32, 2)
+        topTextSprite.image.drawTransparentImage(assets.image`healthIcon6`, 64, 2)
+        topTextSprite.image.drawTransparentImage(assets.image`cleanIcon6`, 96, 2)
+        topTextSprite.image.drawTransparentImage(assets.image`energyIcon6`, 128, 2)
     }
 
     // 昵称显示 - 左下角（文字精灵底部条）

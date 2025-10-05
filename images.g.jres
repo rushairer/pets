@@ -205,7 +205,7 @@
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "image17"
+        "displayName": "rockIcon0"
     },
     "myImages.scissorsIcon": {
         "id": "myImages.scissorsIcon",
@@ -238,6 +238,46 @@
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
         "displayName": "petSleepAnimationFrame2"
+    },
+    "myImages.hungerIcon6": {
+        "id": "myImages.hungerIcon6",
+        "data": "hwQGAAYAAAAiIgAAIiICAAAiIgAAIiIAIiICACIiAAA=",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "image20"
+    },
+    "myImages.happyIcon6": {
+        "id": "myImages.happyIcon6",
+        "data": "hwQGAAYAAAAAVQAAUFIFAFUlVQBVJVUAUFIFAABVAAA=",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "happyIcon0"
+    },
+    "myImages.healthIcon6": {
+        "id": "myImages.healthIcon6",
+        "data": "hwQGAAYAAAAA8A8AAF/1APBV9QAvIg8AL/IAAP8PAAA=",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "healthIcon0"
+    },
+    "myImages.cleanIcon6": {
+        "id": "myImages.cleanIcon6",
+        "data": "hwQGAAYAAAD//wAAAPAPAP///wD///8AAPAPAP//AAA=",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "cleanIcon0"
+    },
+    "myImages.energyIcon6": {
+        "id": "myImages.energyIcon6",
+        "data": "hwQGAAYAAADAAAAAwAAMAMDADADADAwAwAAMAAAADAA=",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "energyIcon0"
     },
     "petIdleAnimation": {
         "id": "petIdleAnimation",
