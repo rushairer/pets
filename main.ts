@@ -35,7 +35,7 @@ enum Difficulty {
     Hard     // 4000ms 衰减
 }
 
-const VERSION = "v1.0.2"
+const VERSION = "v1.0.3"
 
 // 常量，每多少秒一小时
 const SECONDS_PER_HOUR = 30
@@ -685,6 +685,27 @@ function createUI() {
     updateStatusBars()
 }
 
+function getWeekDayString(weekIndex: number): string {
+    switch (weekIndex) {
+        case 0:
+            return "Sun"
+        case 1:
+            return "Mon"
+        case 2:
+            return "Tue"
+        case 3:
+            return "Wed"
+        case 4:
+            return "Thu"
+        case 5:
+            return "Fri"
+        case 6:
+            return "Sat"
+        default:
+            return "Sun"
+    }
+}
+
 // 更新状态条
 function updateStatusBars() {
     if (!hungerBar || !happinessBar || !healthBar || !cleanlinessBar || !energyBar) return
@@ -715,16 +736,12 @@ function updateStatusBars() {
         topTextSprite.image.drawTransparentImage(assets.image`energyIcon6`, 128, 2)
     }
 
-    // 昵称显示 - 左下角（文字精灵底部条）
-    if (bottomTextSprite) {
-        bottomTextSprite.image.print(petName, 4, 2, 1)
-    }
-
     // 显示时间和昼夜状态、金钱（文字精灵顶部条）
     // 分钟按 00' 格式显示（每秒刷新，30秒=1小时 => 每步+2分钟）
     let _minutes = Math.floor(dayNightCycle * 2)
     let _minuteStr = (_minutes < 10 ? "0" : "") + _minutes
-    let timeStr = currentHour + ":" + _minuteStr
+    let _hourStr =(currentHour < 10 ? "0" : "") + currentHour
+    let timeStr = _hourStr + ":" + _minuteStr + " " + getWeekDayString(weeklyDayCounter)
     if (topTextSprite) {
         topTextSprite.image.print(timeStr, 5, 12, isNight ? 5 : 8)
         // 可领取任务徽标（★n）
@@ -757,9 +774,15 @@ function updateStatusBars() {
     energyBar.image.fill(0)
     energyBar.image.fillRect(0, 0, Math.floor(energy * 22 / 100), 4, 8)
 
+
+    // 昵称显示 - 左下角（文字精灵底部条）
+    if (bottomTextSprite) {
+        bottomTextSprite.image.print(petName, 134, 2, 1)
+    }
+
     // 底部操作提示（文字精灵底部条）
     if (menuState == MenuState.Closed && gameMenuState == MenuState.Closed && shopMenuState == MenuState.Closed && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed && bottomTextSprite) {
-        bottomTextSprite.image.print("↑/↓", 140, 6, 1, image.font8)
+        bottomTextSprite.image.print("↑/↓", 2, 6, 1, image.font8)
     }
 }
 
@@ -1260,7 +1283,7 @@ function petWork() {
 
     updateStatusBars()
 
-    game.splash("工作赚取 " + earnedMoney + " 金币！")
+    game.splash("工作赚取" + earnedMoney + "金币！")
     pet.sayText("工作真辛苦，但是赚到钱了！", 2000, false)
 
     music.playTone(440, 300)
@@ -1406,17 +1429,17 @@ function executeGameChoice() {
     let reward = 0
 
     if (playerChoice == petChoice) {
-        result = "平局！"
+        result = "平局!"
         reward = 5
     } else if ((playerChoice == 1 && petChoice == 2) ||
         (playerChoice == 2 && petChoice == 3) ||
         (playerChoice == 3 && petChoice == 1)) {
-        result = "你赢了！"
+        result = "你赢了!"
         reward = 15
         happiness = Math.min(100, happiness + 10)
         weeklyRpsWin++
     } else {
-        result = "我赢了！"
+        result = "我赢了!"
         reward = 3
         happiness = Math.min(100, happiness + 5)
     }
@@ -1426,7 +1449,7 @@ function executeGameChoice() {
     updateStatusBars()
     totalGame++
 
-    game.splash(result + " 获得 " + reward + " 金币！")
+    game.splash(result + "获得" + reward + "金币!")
     music.playTone(523, 400)
 }
 
@@ -1894,7 +1917,7 @@ function showLevelMenu() {
         const sel = ((start + i) == levelSelectedIndex)
         if (sel) itemImg.fill(menuSelectedFontBgColor)
         itemImg.print(t.title, 5, 1, sel ? menuSelectedFontColor : menuFontColor)
-        itemImg.print(status, 120, 1, sel ? menuSelectedFontColor : menuFontColor)
+        itemImg.print(status, 110, 1, sel ? menuSelectedFontColor : menuFontColor)
         const s = sprites.create(itemImg, MenuKind)
         s.setPosition(menuBarPositionX, baseY + i * 16)
         levelMenuSprites.push(s)
@@ -1973,15 +1996,15 @@ function createShopMenuSprites() {
     }
 
     // 创建标题 - 使用统一样式
-    let titleImg = image.create(70, menuTitleHeight)
-    titleImg.print("宠物商店", 8, 0, menuTitleColor)
+    let titleImg = image.create(60, menuTitleHeight)
+    titleImg.print("宠物商店", 6, 0, menuTitleColor)
     let titleSprite = sprites.create(titleImg, MenuKind)
     titleSprite.setPosition(menuTitlePositionX, menuTitlePositionY)
     shopMenuSprites.push(titleSprite)
 
     // 显示当前金钱 - 使用统一Bar样式
     let moneyImg = image.create(menuBarWidth, menuBarHeight)
-    moneyImg.print("当前金钱: " + money, 5, 3, menuFontColor)
+    moneyImg.print("当前金钱:" + money, 5, 3, menuFontColor)
     let moneySprite = sprites.create(moneyImg, MenuKind)
     moneySprite.setPosition(menuBarPositionX, 30)
     shopMenuSprites.push(moneySprite)
@@ -2022,7 +2045,7 @@ function createShopMenuSprites() {
 
     // 显示选中商品的价格 - 使用统一Bar样式
     let priceImg = image.create(menuBarWidth, menuBarHeight)
-    priceImg.print("价格: " + shopItems[selectedShopItem].price + " 金币", 5, 3, menuFontColor)
+    priceImg.print("价格:" + shopItems[selectedShopItem].price + "金币", 5, 3, menuFontColor)
     let priceSprite = sprites.create(priceImg, MenuKind)
     priceSprite.setPosition(menuBarPositionX, 95)
     shopMenuSprites.push(priceSprite)
