@@ -39,6 +39,63 @@ let medicineCount = 2  // 新增：药物数量
 let lastUpdateTime = 0
 let gameRunning = true
 
+// 存档功能
+const SAVE_FLAG_KEY = "pet_saved_flag"
+
+// 将状态重置为默认初始值（用于结束后或首次启动）
+function resetDefaults() {
+    hunger = 50
+    happiness = 50
+    health = 50
+    cleanliness = 50
+    energy = 50
+    money = 100
+    foodCount = 3
+    medicineCount = 2
+    currentHour = 8
+    isNight = false
+    dayNightCycle = 0
+}
+
+function saveProgress() {
+    // 标记已有存档
+    settings.writeString(SAVE_FLAG_KEY, "1")
+    // 基础状态
+    settings.writeNumber("pet_hunger", hunger)
+    settings.writeNumber("pet_happiness", happiness)
+    settings.writeNumber("pet_health", health)
+    settings.writeNumber("pet_cleanliness", cleanliness)
+    settings.writeNumber("pet_energy", energy)
+    // 经济与库存
+    settings.writeNumber("pet_money", money)
+    settings.writeNumber("pet_foodCount", foodCount)
+    settings.writeNumber("pet_medicineCount", medicineCount)
+    // 昼夜
+    settings.writeNumber("pet_currentHour", currentHour)
+    settings.writeNumber("pet_isNight", isNight ? 1 : 0)
+}
+
+function loadProgress() {
+    // 若没有存档标记则跳过
+    if (settings.readString(SAVE_FLAG_KEY) != "1") return
+
+    // 基础状态
+    hunger = settings.readNumber("pet_hunger")
+    happiness = settings.readNumber("pet_happiness")
+    health = settings.readNumber("pet_health")
+    cleanliness = settings.readNumber("pet_cleanliness")
+    energy = settings.readNumber("pet_energy")
+    // 经济与库存
+    money = settings.readNumber("pet_money")
+    foodCount = settings.readNumber("pet_foodCount")
+    medicineCount = settings.readNumber("pet_medicineCount")
+    // 昼夜
+    currentHour = settings.readNumber("pet_currentHour")
+    isNight = settings.readNumber("pet_isNight") == 1
+
+
+}
+
 // 昼夜系统变量
 let currentHour = 8  // 当前时间（0-23）
 let isNight = false
@@ -214,6 +271,8 @@ function updateDayNightCycle() {
 
 // 初始化游戏
 function initGame() {
+    // 读取存档（若有）
+    loadProgress()
     
     // 创建宠物精灵 - 放在屏幕中央
     pet = sprites.create(assets.image`petNormal`, SpriteKind.Player)
@@ -1198,6 +1257,10 @@ function gameOver() {
     gameRunning = false
     animation.stopAnimation(animation.AnimationTypes.All, pet)
     pet.setImage(assets.image`petSad`)
+    // 清除存档标记，避免下次启动加载到结束状态，并写入默认初始状态
+    settings.writeString(SAVE_FLAG_KEY, "0")
+    resetDefaults()
+    saveProgress()
     
     game.showLongText("你的宠物因为缺乏照顾而离开了...\n记得要定期喂食、玩耍、治疗和清洁哦！", DialogLayout.Center)
     
@@ -1209,6 +1272,16 @@ function gameOver() {
 game.onUpdateInterval(1000, () => {
     if (gameRunning) {
         updateStatusBars()
+    }
+})
+
+/**
+ * 自动存档：每10秒后台静默保存一次
+ * 不提示，不改变UI
+ */
+game.onUpdateInterval(10000, () => {
+    if (gameRunning) {
+        saveProgress()
     }
 })
 
