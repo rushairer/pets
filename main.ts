@@ -126,9 +126,15 @@ function resetDefaults() {
     claimed_d_work1 = false
     claimed_w_work5 = false
     claimed_w_rps3 = false
+    claimed_w_work10 = false
+    claimed_w_rps5 = false
     claimed_a_lvl3 = false
     claimed_a_lvl5 = false
     claimed_a_money500 = false
+    claimed_a_lvl10 = false
+    claimed_a_lvl15 = false
+    claimed_a_money1000 = false
+    claimed_a_money2000 = false
 
     currentHour = 8
     isNight = false
@@ -174,9 +180,15 @@ function saveProgress() {
     settings.writeNumber("claimed_d_work1", claimed_d_work1 ? 1 : 0)
     settings.writeNumber("claimed_w_work5", claimed_w_work5 ? 1 : 0)
     settings.writeNumber("claimed_w_rps3", claimed_w_rps3 ? 1 : 0)
+    settings.writeNumber("claimed_w_work10", claimed_w_work10 ? 1 : 0)
+    settings.writeNumber("claimed_w_rps5", claimed_w_rps5 ? 1 : 0)
     settings.writeNumber("claimed_a_lvl3", claimed_a_lvl3 ? 1 : 0)
     settings.writeNumber("claimed_a_lvl5", claimed_a_lvl5 ? 1 : 0)
     settings.writeNumber("claimed_a_money500", claimed_a_money500 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl10", claimed_a_lvl10 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl15", claimed_a_lvl15 ? 1 : 0)
+    settings.writeNumber("claimed_a_money1000", claimed_a_money1000 ? 1 : 0)
+    settings.writeNumber("claimed_a_money2000", claimed_a_money2000 ? 1 : 0)
 }
 
 function loadProgress() {
@@ -231,9 +243,15 @@ function loadProgress() {
     claimed_d_work1 = settings.readNumber("claimed_d_work1") == 1
     claimed_w_work5 = settings.readNumber("claimed_w_work5") == 1
     claimed_w_rps3 = settings.readNumber("claimed_w_rps3") == 1
+    claimed_w_work10 = settings.readNumber("claimed_w_work10") == 1
+    claimed_w_rps5 = settings.readNumber("claimed_w_rps5") == 1
     claimed_a_lvl3 = settings.readNumber("claimed_a_lvl3") == 1
     claimed_a_lvl5 = settings.readNumber("claimed_a_lvl5") == 1
     claimed_a_money500 = settings.readNumber("claimed_a_money500") == 1
+    claimed_a_lvl10 = settings.readNumber("claimed_a_lvl10") == 1
+    claimed_a_lvl15 = settings.readNumber("claimed_a_lvl15") == 1
+    claimed_a_money1000 = settings.readNumber("claimed_a_money1000") == 1
+    claimed_a_money2000 = settings.readNumber("claimed_a_money2000") == 1
 }
 
 // 昼夜系统变量
@@ -1315,10 +1333,16 @@ let claimed_d_work1 = false
 
 let claimed_w_work5 = false
 let claimed_w_rps3 = false
+let claimed_w_work10 = false
+let claimed_w_rps5 = false
 
 let claimed_a_lvl3 = false
 let claimed_a_lvl5 = false
 let claimed_a_money500 = false
+let claimed_a_lvl10 = false
+let claimed_a_lvl15 = false
+let claimed_a_money1000 = false
+let claimed_a_money2000 = false
 
 // 等级菜单交互状态
 let levelTab = 0 // 0=每日 1=每周 2=成就
@@ -1347,6 +1371,8 @@ function resetWeeklyCounters() {
     // 每周任务领奖标记重置
     claimed_w_work5 = false
     claimed_w_rps3 = false
+    claimed_w_work10 = false
+    claimed_w_rps5 = false
 }
 
 // 任务数据与工具
@@ -1399,9 +1425,19 @@ function getWeeklyTasks(): Task[] {
             claimed: claimed_w_work5, canClaim: weeklyWork >= 5 && !claimed_w_work5
         },
         {
+            id: "w_work10", title: "打工10次", target: 10,
+            progress: weeklyWork, rewardXP: 40, rewardMoney: 240,
+            claimed: claimed_w_work10, canClaim: weeklyWork >= 10 && !claimed_w_work10
+        },
+        {
             id: "w_rps3", title: "猜拳胜利3次", target: 3,
             progress: weeklyRpsWin, rewardXP: 30, rewardMoney: 80,
             claimed: claimed_w_rps3, canClaim: weeklyRpsWin >= 3 && !claimed_w_rps3
+        },
+        {
+            id: "w_rps5", title: "猜拳胜利5次", target: 5,
+            progress: weeklyRpsWin, rewardXP: 50, rewardMoney: 140,
+            claimed: claimed_w_rps5, canClaim: weeklyRpsWin >= 5 && !claimed_w_rps5
         }
     ]
 }
@@ -1419,9 +1455,29 @@ function getAchievementTasks(): Task[] {
             claimed: claimed_a_lvl5, canClaim: level >= 5 && !claimed_a_lvl5
         },
         {
+            id: "a_lvl10", title: "等级达到10", target: 1,
+            progress: level >= 10 ? 1 : 0, rewardXP: 0, rewardMoney: 300,
+            claimed: claimed_a_lvl10, canClaim: level >= 10 && !claimed_a_lvl10
+        },
+        {
+            id: "a_lvl15", title: "等级达到15", target: 1,
+            progress: level >= 15 ? 1 : 0, rewardXP: 0, rewardMoney: 500,
+            claimed: claimed_a_lvl15, canClaim: level >= 15 && !claimed_a_lvl15
+        },
+        {
             id: "a_money500", title: "金钱达到500", target: 1,
             progress: money >= 500 ? 1 : 0, rewardXP: 0, rewardMoney: 150,
             claimed: claimed_a_money500, canClaim: money >= 500 && !claimed_a_money500
+        },
+        {
+            id: "a_money1000", title: "金钱达到1000", target: 1,
+            progress: money >= 1000 ? 1 : 0, rewardXP: 0, rewardMoney: 250,
+            claimed: claimed_a_money1000, canClaim: money >= 1000 && !claimed_a_money1000
+        },
+        {
+            id: "a_money2000", title: "金钱达到2000", target: 1,
+            progress: money >= 2000 ? 1 : 0, rewardXP: 0, rewardMoney: 400,
+            claimed: claimed_a_money2000, canClaim: money >= 2000 && !claimed_a_money2000
         }
     ]
 }
@@ -1451,10 +1507,16 @@ function setClaimedById(id: string) {
         case "d_heal1": claimed_d_heal1 = true; break
         case "d_work1": claimed_d_work1 = true; break
         case "w_work5": claimed_w_work5 = true; break
+        case "w_work10": claimed_w_work10 = true; break
         case "w_rps3": claimed_w_rps3 = true; break
+        case "w_rps5": claimed_w_rps5 = true; break
         case "a_lvl3": claimed_a_lvl3 = true; break
         case "a_lvl5": claimed_a_lvl5 = true; break
+        case "a_lvl10": claimed_a_lvl10 = true; break
+        case "a_lvl15": claimed_a_lvl15 = true; break
         case "a_money500": claimed_a_money500 = true; break
+        case "a_money1000": claimed_a_money1000 = true; break
+        case "a_money2000": claimed_a_money2000 = true; break
     }
 }
 
