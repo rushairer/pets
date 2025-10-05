@@ -465,6 +465,24 @@ function debugResetGame() {
     sprites.destroyAllSpritesOfKind(MenuKind)
     sprites.destroyAllSpritesOfKind(UIKind)
     sprites.destroyAllSpritesOfKind(DecorationKind)
+    // 初始化菜单状态与选择索引
+    menuState = MenuState.Closed
+    gameMenuState = MenuState.Closed
+    shopMenuState = MenuState.Closed
+    configMenuState = MenuState.Closed
+    nameMenuState = MenuState.Closed
+    levelMenuState = MenuState.Closed
+    selectedMenuItem = MenuItem.Feed
+    selectedGameChoice = 0
+    selectedShopItem = 0
+    levelTab = 0
+    levelSelectedIndex = 0
+    levelScrollOffset = 0
+    // 清空菜单精灵数组
+    menuSprites = []
+    gameMenuSprites = []
+    shopMenuSprites = []
+    levelMenuSprites = []
     if (pet) {
         pet.destroy()
         pet = null
@@ -634,7 +652,7 @@ function updateStatusBars() {
     
     // 底部操作提示（文字精灵底部条）
     if (menuState == MenuState.Closed && gameMenuState == MenuState.Closed && shopMenuState == MenuState.Closed && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed && bottomTextSprite) {
-        bottomTextSprite.image.print("菜单键", 120, 2, 1)
+        bottomTextSprite.image.print("↑/↓", 140, 6, 1, image.font8)
     }
 }
 
@@ -1623,11 +1641,11 @@ function showLevelMenu() {
         const sel = (i == levelTab)
         tabsImg.print(tabNames[i], x, 3, sel ? menuSelectedFontColor : menuFontColor)
         if (i == 0 && c0 > 0) {
-            tabsImg.print("*", x+24, 3, 2, image.font8)
+            tabsImg.print("*", x+25, 3, 2, image.font8)
         } else if (i == 1 && c1 > 0) {
-            tabsImg.print("*", x+24, 3, 2, image.font8)
-        } else if (i == 1 && c2 > 0) {
-            tabsImg.print("*", x+24, 3, 2, image.font8)
+            tabsImg.print("*", x+25, 3, 2, image.font8)
+        } else if (i == 2 && c2 > 0) {
+            tabsImg.print("*", x+25, 3, 2, image.font8)
         }
     }
     const tabsSprite = sprites.create(tabsImg, MenuKind)
@@ -1848,24 +1866,12 @@ sprites.onOverlap(SpriteKind.Player, UIKind, (sprite, otherSprite) => {
     // 这里不处理重叠，而是通过按键处理
 })
 
-// 新的控制器输入处理 - 菜单系统
-controller.menu.onEvent(ControllerButtonEvent.Pressed, () => {
-    // 若其它菜单已打开，禁止打开/切换宠物菜单，避免遮挡与冲突
-    if (
-        levelMenuState == MenuState.Open ||
-        gameMenuState == MenuState.Open ||
-        shopMenuState == MenuState.Open ||
-        configMenuState == MenuState.Open ||
-        nameMenuState == MenuState.Open
-    ) {
-        return
-    }
-    if (menuState == MenuState.Closed) {
-        showMenu()
-    } else {
-        hideMenu()
-    }
-})
+// // 新的控制器输入处理 - 菜单系统
+// controller.menu.onEvent(ControllerButtonEvent.Pressed, () => {
+//     // 释放 Menu 键功能：不再用于打开/关闭宠物菜单
+//     // 预留：未来可绑定其他功能
+//     return
+// })
 
 controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
     if (levelMenuState == MenuState.Open) {
@@ -1972,6 +1978,16 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
         }
     } else if (nameMenuState == MenuState.Open) {
         // 昵称菜单不支持上下选择，忽略
+    } else if (
+        menuState == MenuState.Closed &&
+        levelMenuState == MenuState.Closed &&
+        gameMenuState == MenuState.Closed &&
+        shopMenuState == MenuState.Closed &&
+        configMenuState == MenuState.Closed &&
+        nameMenuState == MenuState.Closed
+    ) {
+        // 主界面空闲态：下键打开宠物菜单
+        showMenu()
     }
 })
 
