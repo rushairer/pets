@@ -815,14 +815,26 @@ function createGameMenuSprites() {
         let x = 80
         let y = 40 + i * 25
         
-        let choiceImg = image.create(50, 18)
+        let choiceImg = image.create(60, 18)
+        
+        // 先绘制对应图标（石头/剪刀/布）
+        let icon: Image = null
+        if (i == 0) {
+            icon = assets.image`rockIcon`
+        } else if (i == 1) {
+            icon = assets.image`scissorsIcon`
+        } else {
+            icon = assets.image`paperIcon`
+        }
         
         if (i == selectedGameChoice) {
             choiceImg.fill(menuSelectedFontBgColor)
-            choiceImg.print(gameChoices[i], 12, 2, menuSelectedFontColor)
+            choiceImg.drawTransparentImage(icon, 2, 1)
+            choiceImg.print(gameChoices[i], 22, 2, menuSelectedFontColor)
         } else {
             choiceImg.fill(menuFontBgColor)
-            choiceImg.print(gameChoices[i], 12, 2, menuFontColor)
+            choiceImg.drawTransparentImage(icon, 2, 1)
+            choiceImg.print(gameChoices[i], 22, 2, menuFontColor)
         }
         
         let choiceSprite = sprites.create(choiceImg, MenuKind)

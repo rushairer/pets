@@ -199,13 +199,29 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "image16"
     },
-    "myImages.petSleepAnimationFrame0": {
-        "id": "myImages.petSleepAnimationFrame0",
-        "data": "hwQQABAAAAAAAADw/w8AAAAA8F9V9Q8AAABfVVVV9QAA8FVVVVVVDwBf9f9VVVUPAF/1/1VVVfXwVVVVVVVV9fBVVVUlUlX18FVVVSVSVfXwVVVfVVVV9QBf9f9VVVX1AF/1/1VVVQ8A8FVVVVVVDwAAX1VVVfUAAADwX1X1DwAAAADw/w8AAA==",
+    "myImages.rockIcon": {
+        "id": "myImages.rockIcon",
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAACZmZkAAAAAkJmZmQkAAACZmZmZmQAAkJmZmZmZCQCQmZmZmZmZAJCZmZmZmZkJkJmZmZmZmQCQmZmZmZkJAACZmZmZmQAAAJCZmZkJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petSleepAnimationFrame0"
+        "displayName": "image17"
+    },
+    "myImages.scissorsIcon": {
+        "id": "myImages.scissorsIcon",
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkJmZmQAAmQCQmZmZmZmZCQAAAJCZmZkJkJmZmZmZmQmQmZmZmZmZCQAAAJAAAJkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "image18"
+    },
+    "myImages.paperIcon": {
+        "id": "myImages.paperIcon",
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJmZmQAAAJCZmZmZmQAAmZmZmZmZmQCZmZmZmZmZCZmZmZmZmZkJmZmZmZmZmQmZmZmZmZmZAJCZmZmZmQAAAACZmZkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "image19"
     },
     "myImages.petSleepAnimationFrame1": {
         "id": "myImages.petSleepAnimationFrame1",
@@ -214,6 +230,14 @@
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
         "displayName": "petSleepAnimationFrame1"
+    },
+    "myImages.petSleepAnimationFrame0": {
+        "id": "myImages.petSleepAnimationFrame0",
+        "data": "hwQQABAAAAAAAADw/w8AAAAA8F9V9Q8AAABfVVVV9QAA8FVVVVVVDwBf9f9VVVUPAF/1/1VVVfXwVVVVVVVV9fBVVVUlUlX18FVVVSVSVfXwVVVfVVVV9QBf9f9VVVX1AF/1/1VVVQ8A8FVVVVVVDwAAX1VVVfUAAADwX1X1DwAAAADw/w8AAA==",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "petSleepAnimationFrame0"
     },
     "myImages.petIdleAnimation": {
         "id": "myImages.petIdleAnimation",
