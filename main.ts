@@ -1301,8 +1301,8 @@ let claimed_a_money500 = false
 let levelTab = 0 // 0=每日 1=每周 2=成就
 let levelSelectedIndex = 0
 let levelScrollOffset = 0
-const levelVisibleRows = 5
-const levelCursorRow = 2
+const levelVisibleRows = 3
+const levelCursorRow = 1
 
 function resetDailyCounters() {
     dailyFeed = 0
@@ -1550,6 +1550,8 @@ function showLevelMenu() {
     const maxStart = Math.max(0, tasks.length - levelVisibleRows)
     const start = Math.max(0, Math.min(maxStart, levelSelectedIndex - levelCursorRow))
     const end = Math.min(tasks.length, start + levelVisibleRows)
+    const selectedBaseY = 80
+    const baseY = selectedBaseY - (levelCursorRow * 14)
     for (let i = 0; i < end - start; i++) {
         const itemImg = image.create(menuBarWidth, 14)
         const t = tasks[start + i]
@@ -1562,7 +1564,7 @@ function showLevelMenu() {
         itemImg.print(t.title, 5, 3, sel ? menuSelectedFontColor : menuFontColor)
         itemImg.print(status, 110, 3, sel ? menuSelectedFontColor : menuFontColor)
         const s = sprites.create(itemImg, MenuKind)
-        s.setPosition(menuBarPositionX, 75 + i * 14)
+        s.setPosition(menuBarPositionX, baseY + i * 14)
         levelMenuSprites.push(s)
     }
     // 上/下滚动箭头提示
@@ -1570,14 +1572,14 @@ function showLevelMenu() {
         const upImg = image.create(menuBarWidth, 8)
         upImg.print("↑", 150, 0, menuFontColor)
         const upS = sprites.create(upImg, MenuKind)
-        upS.setPosition(menuBarPositionX, 69)
+        upS.setPosition(menuBarPositionX, baseY - 8)
         levelMenuSprites.push(upS)
     }
     if (end < tasks.length) {
         const dnImg = image.create(menuBarWidth, 8)
         dnImg.print("↓", 150, 0, menuFontColor)
         const dnS = sprites.create(dnImg, MenuKind)
-        dnS.setPosition(menuBarPositionX, 75 + (levelVisibleRows * 14))
+        dnS.setPosition(menuBarPositionX, baseY + (levelVisibleRows * 14))
         levelMenuSprites.push(dnS)
     }
 
