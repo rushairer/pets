@@ -52,6 +52,8 @@ let foodCount = 3  // 新增：食物数量
 let medicineCount = 2  // 新增：药物数量
 let lastUpdateTime = 0
 let gameRunning = true
+// 睡眠模式标志：通过菜单进入睡觉后置为 true，按 B 唤醒或精力满则结束
+let sleeping = false
 
 // 新增：难度与昵称配置
 let currentDifficulty: Difficulty = Difficulty.Normal
@@ -125,6 +127,29 @@ function saveProgress() {
     // 难度与昵称
     settings.writeNumber("game_difficulty", currentDifficulty)
     settings.writeString("pet_name", petName)
+    // 等级与经验
+    settings.writeNumber("player_level", level)
+    settings.writeNumber("player_xp", xp)
+    // 任务与成就 - 计数/索引/领奖标记
+    settings.writeNumber("day_counter", dayCounter)
+    settings.writeNumber("week_index", weekIndex)
+    settings.writeNumber("daily_feed", dailyFeed)
+    settings.writeNumber("daily_play", dailyPlay)
+    settings.writeNumber("daily_clean", dailyClean)
+    settings.writeNumber("daily_heal", dailyHeal)
+    settings.writeNumber("daily_work", dailyWork)
+    settings.writeNumber("weekly_work", weeklyWork)
+    settings.writeNumber("weekly_rps_win", weeklyRpsWin)
+    settings.writeNumber("claimed_d_feed3", claimed_d_feed3 ? 1 : 0)
+    settings.writeNumber("claimed_d_play2", claimed_d_play2 ? 1 : 0)
+    settings.writeNumber("claimed_d_clean1", claimed_d_clean1 ? 1 : 0)
+    settings.writeNumber("claimed_d_heal1", claimed_d_heal1 ? 1 : 0)
+    settings.writeNumber("claimed_d_work1", claimed_d_work1 ? 1 : 0)
+    settings.writeNumber("claimed_w_work5", claimed_w_work5 ? 1 : 0)
+    settings.writeNumber("claimed_w_rps3", claimed_w_rps3 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl3", claimed_a_lvl3 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl5", claimed_a_lvl5 ? 1 : 0)
+    settings.writeNumber("claimed_a_money500", claimed_a_money500 ? 1 : 0)
 }
 
 function loadProgress() {
@@ -155,6 +180,33 @@ function loadProgress() {
         petName = n
     }
 
+    // 等级与经验（若有）
+    const lv = settings.readNumber("player_level")
+    const px = settings.readNumber("player_xp")
+    if (lv && lv > 0) level = lv
+    if (px && px >= 0) xp = px
+
+    // 任务与成就（若有）
+    const dc = settings.readNumber("day_counter"); if (dc || dc == 0) dayCounter = dc
+    const wi = settings.readNumber("week_index"); if (wi || wi == 0) weekIndex = wi
+    const df = settings.readNumber("daily_feed"); if (df || df == 0) dailyFeed = df
+    const dp = settings.readNumber("daily_play"); if (dp || dp == 0) dailyPlay = dp
+    const dl = settings.readNumber("daily_clean"); if (dl || dl == 0) dailyClean = dl
+    const dh = settings.readNumber("daily_heal"); if (dh || dh == 0) dailyHeal = dh
+    const dw = settings.readNumber("daily_work"); if (dw || dw == 0) dailyWork = dw
+    const ww = settings.readNumber("weekly_work"); if (ww || ww == 0) weeklyWork = ww
+    const wr = settings.readNumber("weekly_rps_win"); if (wr || wr == 0) weeklyRpsWin = wr
+
+    claimed_d_feed3 = settings.readNumber("claimed_d_feed3") == 1
+    claimed_d_play2 = settings.readNumber("claimed_d_play2") == 1
+    claimed_d_clean1 = settings.readNumber("claimed_d_clean1") == 1
+    claimed_d_heal1 = settings.readNumber("claimed_d_heal1") == 1
+    claimed_d_work1 = settings.readNumber("claimed_d_work1") == 1
+    claimed_w_work5 = settings.readNumber("claimed_w_work5") == 1
+    claimed_w_rps3 = settings.readNumber("claimed_w_rps3") == 1
+    claimed_a_lvl3 = settings.readNumber("claimed_a_lvl3") == 1
+    claimed_a_lvl5 = settings.readNumber("claimed_a_lvl5") == 1
+    claimed_a_money500 = settings.readNumber("claimed_a_money500") == 1
 }
 
 // 昼夜系统变量
@@ -297,6 +349,8 @@ function updateDayNightBackground() {
         // 夜晚背景 - 先清除背景图片，再设置深蓝色纯色背景
         scene.setBackgroundImage(null)
         scene.setBackgroundColor(8)
+        // 降低整体亮度以“变暗”，不持久化到系统设置
+        screen.setBrightness(120)
         // 添加星星效果
         for (let i = 0; i < 8; i++) {
             let star = sprites.create(image.create(1, 1), DecorationKind)
@@ -304,8 +358,9 @@ function updateDayNightBackground() {
             star.setPosition(randint(10, 150), randint(20, 60))
         }
     } else {
-        // 白天背景 - 使用背景图片
+        // 白天背景 - 使用背景图片并恢复亮度
         scene.setBackgroundImage(assets.image`background`)
+        screen.setBrightness(255)
         // 清除星星
         sprites.destroyAllSpritesOfKind(DecorationKind)
     }
@@ -325,6 +380,18 @@ function updateDayNightCycle() {
         // 如果昼夜状态改变，更新背景
         if (wasNight !== isNight) {
             updateDayNightBackground()
+        }
+        // 新一天：currentHour 回到 0 视为新的一天
+        if (currentHour == 0) {
+            dayCounter++
+            resetDailyCounters()
+            // 周切换：每 7 天一周
+            const newWeek = Math.floor(dayCounter / 7)
+            if (newWeek != weekIndex) {
+                weekIndex = newWeek
+                resetWeeklyCounters()
+            }
+            saveProgress()
         }
         
         // 夜晚时精力消耗加快
@@ -455,9 +522,18 @@ function createUI() {
 function updateStatusBars() {
     if (!hungerBar || !happinessBar || !healthBar || !cleanlinessBar || !energyBar) return
     // 菜单遮挡控制：当任一菜单打开时隐藏文字精灵，避免遮挡
-    const anyMenuOpen = (menuState == MenuState.Open) || (gameMenuState == MenuState.Open) || (shopMenuState == MenuState.Open) || (configMenuState == MenuState.Open) || (nameMenuState == MenuState.Open)
+    const anyMenuOpen = (menuState == MenuState.Open) || (gameMenuState == MenuState.Open) || (shopMenuState == MenuState.Open) || (configMenuState == MenuState.Open) || (nameMenuState == MenuState.Open) || (levelMenuState == MenuState.Open)
     if (topTextSprite) topTextSprite.setFlag(SpriteFlag.Invisible, anyMenuOpen)
     if (bottomTextSprite) bottomTextSprite.setFlag(SpriteFlag.Invisible, anyMenuOpen)
+    // 同步隐藏五个状态条与其它 UI 元素，避免遮挡
+    if (hungerBar) hungerBar.setFlag(SpriteFlag.Invisible, anyMenuOpen)
+    if (happinessBar) happinessBar.setFlag(SpriteFlag.Invisible, anyMenuOpen)
+    if (healthBar) healthBar.setFlag(SpriteFlag.Invisible, anyMenuOpen)
+    if (cleanlinessBar) cleanlinessBar.setFlag(SpriteFlag.Invisible, anyMenuOpen)
+    if (energyBar) energyBar.setFlag(SpriteFlag.Invisible, anyMenuOpen)
+    for (let s of sprites.allOfKind(UIKind)) {
+        s.setFlag(SpriteFlag.Invisible, anyMenuOpen)
+    }
     // 清空文字精灵内容
     if (topTextSprite) topTextSprite.image.fill(0)
     if (bottomTextSprite) bottomTextSprite.image.fill(0)
@@ -521,7 +597,7 @@ function startPetAnimation() {
     startRandomMovement()
     
     game.onUpdateInterval(3000, () => {
-        if (gameRunning) {
+        if (gameRunning && !sleeping) {
             updatePetState()
         }
     })
@@ -530,7 +606,7 @@ function startPetAnimation() {
 // 随机移动系统
 function startRandomMovement() {
     game.onUpdateInterval(4000, () => {
-        if (gameRunning && pet && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed && getCurrentPetState() != PetState.Sick) {
+        if (gameRunning && pet && !sleeping && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed && getCurrentPetState() != PetState.Sick) {
             // 随机选择动作
             let action = randint(1, 4)
             switch (action) {
@@ -613,6 +689,7 @@ function petDance() {
 // 更新宠物状态和外观
 function updatePetState() {
     if (!pet) return
+    if (sleeping) return
     let currentState = getCurrentPetState()
     
     // 停止当前动画
@@ -701,8 +778,11 @@ function feedPet() {
         
         hunger = Math.min(100, hunger + 20)
         happiness = Math.min(100, happiness + 5)
+        gainXP(5)
         updateStatusBars()
         
+        // 计数与反馈
+        dailyFeed++
         // 显示反馈
         game.showLongText("+20 饥饿度\n(剩余食物:" + foodCount + ")",DialogLayout.Bottom)
         pet.sayText("好香啊！谢谢主人！", 1500, false)
@@ -725,11 +805,14 @@ function playWithPet() {
         hunger = Math.max(0, hunger - 10)
         cleanliness = Math.max(0, cleanliness - 5)
         energy = Math.max(0, energy - 5)  // 玩耍消耗精力
+        gainXP(8)
         updateStatusBars()
         
         // 特殊动画 - 跳舞
         petDance()
         
+        // 计数与反馈
+        dailyPlay++
         // 显示反馈
         game.splash("+25 快乐度")
         
@@ -750,9 +833,12 @@ function healPet() {
         medicineCount--
         
         health = Math.min(100, health + 30)
+        gainXP(10)
         updateStatusBars()
         updatePetState()
         
+        // 计数与反馈
+        dailyHeal++
         // 显示反馈
         game.showLongText("+30 健康度\n(剩余药物:" + medicineCount + ")", DialogLayout.Bottom)
         pet.sayText("药物真有效！感觉好多了！", 1500, false)
@@ -768,9 +854,12 @@ function cleanPet() {
     if (cleanliness < 100) {
         cleanliness = Math.min(100, cleanliness + 35)
         happiness = Math.min(100, happiness + 10)
+        gainXP(6)
         updateStatusBars()
         updatePetState()
         
+        // 计数与反馈
+        dailyClean++
         // 显示反馈
         game.splash("+35 清洁度")
         
@@ -778,33 +867,61 @@ function cleanPet() {
     }
 }
 
-// 睡觉功能
+/** 睡觉功能（可持续睡眠模式） */
 function petSleep() {
-    if (energy < 100) {
-        // 停止当前动画
-        animation.stopAnimation(animation.AnimationTypes.All, pet)
-        
-        // 切换到睡觉状态
+    if (!pet) return
+    // 容错：若之前被打断但 sleeping 未复位，强制复位以允许再次入睡
+    if (sleeping && energy < 100) {
+        sleeping = false
+    }
+    if (sleeping) return
+    if (energy >= 100) {
+        pet.sayText("我已经睡饱啦！", 1500, false)
+        return
+    }
+    sleeping = true
+    // 停止当前动画并进入睡觉动画
+    animation.stopAnimation(animation.AnimationTypes.All, pet)
+    pet.setImage(assets.image`petSleeping`)
+    animation.runImageAnimation(pet, assets.animation`petSleepAnimation`, 2000, true)
+    // 保活睡觉动画：若被意外打断，每秒恢复一次
+    const keepSleepAnim = () => {
+        if (!sleeping || !pet) return
         pet.setImage(assets.image`petSleeping`)
         animation.runImageAnimation(pet, assets.animation`petSleepAnimation`, 2000, true)
-        
-        // 恢复精力
-        energy = Math.min(100, energy + 40)
-        health = Math.min(100, health + 10)
-        
-        updateStatusBars()
-        
-        // 显示反馈
-        game.splash("+40 精力度")
-        pet.sayText("呼呼...好舒服的觉...", 2000, false)
-        
-        music.playTone(196, 500)
-        
-        // 3秒后恢复正常状态
-        setTimeout(() => {
-            updatePetState()
-        }, 3000)
+        setTimeout(keepSleepAnim, 1000)
     }
+    setTimeout(keepSleepAnim, 1000)
+    pet.sayText("ZzZ...", 1000, false)
+    music.playTone(196, 200)
+    // 每秒缓慢恢复精力与少量健康，直到满或被唤醒
+    const tick = () => {
+        if (!sleeping) return
+        energy = Math.min(100, energy + 5)
+        if (health < 100) health = Math.min(100, health + 1)
+        updateStatusBars()
+        if (energy >= 100) {
+            stopSleepMode()
+        } else {
+            setTimeout(tick, 1000)
+    // 最长睡眠时长：30秒，超时自动醒来
+    setTimeout(() => {
+        if (sleeping) {
+            stopSleepMode()
+        }
+    }, 30000)
+        }
+    }
+    setTimeout(tick, 1000)
+}
+/** 结束睡眠模式 */
+function stopSleepMode() {
+    if (!sleeping) return
+    sleeping = false
+    animation.stopAnimation(animation.AnimationTypes.All, pet)
+    updatePetState()
+    if (pet) pet.sayText("我醒啦！", 800, false)
+    music.playTone(262, 100)
 }
 
 // 宠物随机说话
@@ -820,6 +937,8 @@ function petRandomTalk() {
 // 显示菜单
 function showMenu() {
     if (menuState == MenuState.Open) return
+    // 若正处于睡眠，打开菜单前先唤醒，避免睡眠状态卡住
+    if (sleeping) stopSleepMode()
     
     menuState = MenuState.Open
     // 保留上次选中项，不重置
@@ -942,6 +1061,9 @@ function petWork() {
     energy = Math.max(0, energy - 20)
     let earnedMoney = randint(10, 30)
     money += earnedMoney
+    gainXP(12)
+    dailyWork++
+    weeklyWork++
     
     // 显示工作动画
     animation.stopAnimation(animation.AnimationTypes.All, pet)
@@ -1051,6 +1173,14 @@ function updateGameMenuDisplay() {
     createGameMenuSprites()
 }
 
+// 更新等级菜单
+function updateLevelMenuDisplay() {
+    if (levelMenuState == MenuState.Closed) return
+    sprites.destroyAllSpritesOfKind(MenuKind)
+    levelMenuState = MenuState.Closed
+    showLevelMenu()
+}
+
 // 隐藏游戏菜单
 function hideGameMenu() {
     if (gameMenuState == MenuState.Closed) return
@@ -1090,6 +1220,7 @@ function executeGameChoice() {
         result = "你赢了！"
         reward = 15
         happiness = Math.min(100, happiness + 10)
+        weeklyRpsWin++
     } else {
         result = "我赢了！"
         reward = 3
@@ -1097,10 +1228,212 @@ function executeGameChoice() {
     }
     
     money += reward
+    gainXP(reward == 15 ? 10 : (reward == 5 ? 3 : 2))
     updateStatusBars()
     
     game.splash(result + " 获得 " + reward + " 金币！")
     music.playTone(523, 400)
+}
+
+// 等级与奖励 - 基础占位变量
+// 等级与奖励 - 基础占位变量
+let levelMenuState = MenuState.Closed
+let level = 1
+let xp = 0
+let xpToNext = 100
+let levelMenuSprites: Sprite[] = []
+
+// 任务与成就 - 计数与状态（最小实现）
+// 模拟“天/周”推进：currentHour 回到 0 视为新的一天；每 7 天视为新的一周
+let dayCounter = 0
+let weekIndex = 0
+
+// 每日计数
+let dailyFeed = 0
+let dailyPlay = 0
+let dailyClean = 0
+let dailyHeal = 0
+let dailyWork = 0
+
+// 每周计数
+let weeklyWork = 0
+let weeklyRpsWin = 0
+
+// 成就（无需计数，直接由条件判断）：Lv3、Lv5、钱500
+
+// 已领奖标记（持久化）
+let claimed_d_feed3 = false
+let claimed_d_play2 = false
+let claimed_d_clean1 = false
+let claimed_d_heal1 = false
+let claimed_d_work1 = false
+
+let claimed_w_work5 = false
+let claimed_w_rps3 = false
+
+let claimed_a_lvl3 = false
+let claimed_a_lvl5 = false
+let claimed_a_money500 = false
+
+// 等级菜单交互状态
+let levelTab = 0 // 0=每日 1=每周 2=成就
+let levelSelectedIndex = 0
+
+function resetDailyCounters() {
+    dailyFeed = 0
+    dailyPlay = 0
+    dailyClean = 0
+    dailyHeal = 0
+    dailyWork = 0
+    // 每日任务领奖标记重置
+    claimed_d_feed3 = false
+    claimed_d_play2 = false
+    claimed_d_clean1 = false
+    claimed_d_heal1 = false
+    claimed_d_work1 = false
+}
+
+function resetWeeklyCounters() {
+    weeklyWork = 0
+    weeklyRpsWin = 0
+    // 每周任务领奖标记重置
+    claimed_w_work5 = false
+    claimed_w_rps3 = false
+}
+
+// 任务数据与工具
+interface Task {
+    id: string
+    title: string
+    target: number
+    progress: number
+    rewardXP: number
+    rewardMoney: number
+    claimed: boolean
+    canClaim: boolean
+}
+
+function getDailyTasks(): Task[] {
+    return [
+        {
+            id: "d_feed3", title: "喂食 3 次", target: 3,
+            progress: dailyFeed, rewardXP: 10, rewardMoney: 10,
+            claimed: claimed_d_feed3, canClaim: dailyFeed >= 3 && !claimed_d_feed3
+        },
+        {
+            id: "d_play2", title: "玩耍 2 次", target: 2,
+            progress: dailyPlay, rewardXP: 10, rewardMoney: 10,
+            claimed: claimed_d_play2, canClaim: dailyPlay >= 2 && !claimed_d_play2
+        },
+        {
+            id: "d_clean1", title: "清洁 1 次", target: 1,
+            progress: dailyClean, rewardXP: 10, rewardMoney: 10,
+            claimed: claimed_d_clean1, canClaim: dailyClean >= 1 && !claimed_d_clean1
+        },
+        {
+            id: "d_heal1", title: "治疗 1 次", target: 1,
+            progress: dailyHeal, rewardXP: 10, rewardMoney: 10,
+            claimed: claimed_d_heal1, canClaim: dailyHeal >= 1 && !claimed_d_heal1
+        },
+        {
+            id: "d_work1", title: "打工 1 次", target: 1,
+            progress: dailyWork, rewardXP: 10, rewardMoney: 10,
+            claimed: claimed_d_work1, canClaim: dailyWork >= 1 && !claimed_d_work1
+        }
+    ]
+}
+
+function getWeeklyTasks(): Task[] {
+    return [
+        {
+            id: "w_work5", title: "本周打工 5 次", target: 5,
+            progress: weeklyWork, rewardXP: 20, rewardMoney: 50,
+            claimed: claimed_w_work5, canClaim: weeklyWork >= 5 && !claimed_w_work5
+        },
+        {
+            id: "w_rps3", title: "本周猜拳胜利 3 次", target: 3,
+            progress: weeklyRpsWin, rewardXP: 30, rewardMoney: 0,
+            claimed: claimed_w_rps3, canClaim: weeklyRpsWin >= 3 && !claimed_w_rps3
+        }
+    ]
+}
+
+function getAchievementTasks(): Task[] {
+    return [
+        {
+            id: "a_lvl3", title: "等级达到 3", target: 1,
+            progress: level >= 3 ? 1 : 0, rewardXP: 0, rewardMoney: 100,
+            claimed: claimed_a_lvl3, canClaim: level >= 3 && !claimed_a_lvl3
+        },
+        {
+            id: "a_lvl5", title: "等级达到 5", target: 1,
+            progress: level >= 5 ? 1 : 0, rewardXP: 0, rewardMoney: 200,
+            claimed: claimed_a_lvl5, canClaim: level >= 5 && !claimed_a_lvl5
+        },
+        {
+            id: "a_money500", title: "金钱达到 500", target: 1,
+            progress: money >= 500 ? 1 : 0, rewardXP: 0, rewardMoney: 0,
+            claimed: claimed_a_money500, canClaim: money >= 500 && !claimed_a_money500
+        }
+    ]
+}
+
+function getCurrentTasks(): Task[] {
+    if (levelTab == 0) return getDailyTasks()
+    if (levelTab == 1) return getWeeklyTasks()
+    return getAchievementTasks()
+}
+
+function setClaimedById(id: string) {
+    switch (id) {
+        case "d_feed3": claimed_d_feed3 = true; break
+        case "d_play2": claimed_d_play2 = true; break
+        case "d_clean1": claimed_d_clean1 = true; break
+        case "d_heal1": claimed_d_heal1 = true; break
+        case "d_work1": claimed_d_work1 = true; break
+        case "w_work5": claimed_w_work5 = true; break
+        case "w_rps3": claimed_w_rps3 = true; break
+        case "a_lvl3": claimed_a_lvl3 = true; break
+        case "a_lvl5": claimed_a_lvl5 = true; break
+        case "a_money500": claimed_a_money500 = true; break
+    }
+}
+
+function claimSelectedTask() {
+    const tasks = getCurrentTasks()
+    if (levelSelectedIndex < 0 || levelSelectedIndex >= tasks.length) return
+    const t = tasks[levelSelectedIndex]
+    if (!t.canClaim) return
+    // 发放奖励
+    if (t.rewardMoney > 0) money += t.rewardMoney
+    if (t.rewardXP > 0) gainXP(t.rewardXP)
+    setClaimedById(t.id)
+    saveProgress()
+    updateStatusBars()
+    // 刷新菜单显示
+    sprites.destroyAllSpritesOfKind(MenuKind)
+    levelMenuState = MenuState.Closed
+    showLevelMenu()
+}
+
+// 经验与升级（基础框架）
+function xpToNextLevel(): number {
+    // 简单线性曲线：Lv1 需100，后续每级+50
+    return 100 + Math.max(0, level - 1) * 50
+}
+function gainXP(n: number) {
+    if (n <= 0) return
+    xp += n
+    while (xp >= xpToNextLevel()) {
+        xp -= xpToNextLevel()
+        level++
+        // 基础升级奖励：+50 金币（可后续扩展为奖励队列）
+        money += 50
+        if (pet) pet.sayText("升级到 Lv." + level + "！", 1500, false)
+        effects.confetti.startScreenEffect(300)
+    }
+    updateStatusBars()
+    saveProgress()
 }
 
 // 购物菜单变量
@@ -1117,6 +1450,92 @@ let shopItems = [
 // 新增功能：购物系统
 function openShop() {
     showShopMenu()
+}
+
+// 显示等级与奖励菜单（基础版）
+function showLevelMenu() {
+    if (levelMenuState == MenuState.Open) return
+    
+    levelMenuState = MenuState.Open
+
+    const bg = sprites.create(image.create(160, 120), MenuKind)
+    bg.image.fill(menuBgColor)
+    bg.setPosition(80, 60)
+    levelMenuSprites.push(bg)
+
+    const titleImg = image.create(90, menuTitleHeight)
+    titleImg.print("等级与奖励", 8, 0, menuTitleColor)
+    const title = sprites.create(titleImg, MenuKind)
+    title.setPosition(menuTitlePositionX, menuTitlePositionY)
+    levelMenuSprites.push(title)
+
+    // 等级与经验条信息
+    const infoImg = image.create(menuBarWidth, menuBarHeight)
+    infoImg.fill(menuBarBgColor)
+    const need = xpToNextLevel()
+    infoImg.print("Lv." + level + "  XP: " + xp + "/" + need, 5, 3, menuBarFontColor)
+    // 进度条（底部细条）
+    const barW = menuBarWidth - 10
+    const filled = Math.min(barW, Math.floor((xp * barW) / Math.max(1, need)))
+    infoImg.fillRect(5, menuBarHeight - 4, barW, 2, 1)
+    infoImg.fillRect(5, menuBarHeight - 4, filled, 2, 7)
+    const infoSprite = sprites.create(infoImg, MenuKind)
+    infoSprite.setPosition(menuBarPositionX, 35)
+    levelMenuSprites.push(infoSprite)
+
+    // 页签（每日/每周/成就）
+    const tabsImg = image.create(menuBarWidth, menuBarHeight)
+    tabsImg.fill(menuBarBgColor)
+    const tabNames = ["每日", "每周", "成就"]
+    for (let i = 0; i < 3; i++) {
+        const x = 5 + i * 45
+        const sel = (i == levelTab)
+        tabsImg.print(tabNames[i], x, 3, sel ? menuSelectedFontColor : menuFontColor)
+    }
+    const tabsSprite = sprites.create(tabsImg, MenuKind)
+    tabsSprite.setPosition(menuBarPositionX, 55)
+    levelMenuSprites.push(tabsSprite)
+
+    // 任务列表
+    const tasks = getCurrentTasks()
+    for (let i = 0; i < tasks.length; i++) {
+        const itemImg = image.create(menuBarWidth, 14)
+        const t = tasks[i]
+        let status = ""
+        if (t.claimed) status = "已领"
+        else if (t.canClaim) status = "可领"
+        else status = t.progress + "/" + t.target
+        const sel = (i == levelSelectedIndex)
+        if (sel) itemImg.fill(menuSelectedFontBgColor)
+        itemImg.print(t.title, 5, 3, sel ? menuSelectedFontColor : menuFontColor)
+        itemImg.print(status, 110, 3, sel ? menuSelectedFontColor : menuFontColor)
+        const s = sprites.create(itemImg, MenuKind)
+        s.setPosition(menuBarPositionX, 75 + i * 14)
+        levelMenuSprites.push(s)
+        if (i >= 4) break // 最多显示5项，避免超出
+    }
+
+    // 提示
+    const hintImg = image.create(menuBarWidth, menuBarHeight)
+    hintImg.fill(menuBarBgColor)
+    hintImg.print("左右切换 上下选择 A领取 B返回", 3, 3, menuBarFontColor)
+    const hint = sprites.create(hintImg, MenuKind)
+    hint.setPosition(menuBarPositionX, menuBarPositionY)
+    levelMenuSprites.push(hint)
+
+    updateStatusBars()
+}
+
+// 隐藏等级与奖励菜单
+function hideLevelMenu() {
+    if (levelMenuState == MenuState.Closed) return
+    
+    levelMenuState = MenuState.Closed
+    for (let s of levelMenuSprites) {
+        s.destroy()
+    }
+    levelMenuSprites = []
+    updateStatusBars()
 }
 
 // 显示购物菜单
@@ -1270,7 +1689,13 @@ controller.menu.onEvent(ControllerButtonEvent.Pressed, () => {
 })
 
 controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
-    if (menuState == MenuState.Open) {
+    if (levelMenuState == MenuState.Open) {
+        if (levelTab > 0) {
+            levelTab--
+            if (levelSelectedIndex >= getCurrentTasks().length) levelSelectedIndex = 0
+            updateLevelMenuDisplay()
+        }
+    } else if (menuState == MenuState.Open) {
         if (selectedMenuItem > 0) {
             selectedMenuItem--
             updateMenuSelection()
@@ -1279,7 +1704,13 @@ controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
 })
 
 controller.right.onEvent(ControllerButtonEvent.Pressed, () => {
-    if (menuState == MenuState.Open) {
+    if (levelMenuState == MenuState.Open) {
+        if (levelTab < 2) {
+            levelTab++
+            if (levelSelectedIndex >= getCurrentTasks().length) levelSelectedIndex = 0
+            updateLevelMenuDisplay()
+        }
+    } else if (menuState == MenuState.Open) {
         if (selectedMenuItem < menuItems.length - 1) {
             selectedMenuItem++
             updateMenuSelection()
@@ -1288,7 +1719,12 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, () => {
 })
 
 controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
-    if (menuState == MenuState.Open) {
+    if (levelMenuState == MenuState.Open) {
+        if (levelSelectedIndex > 0) {
+            levelSelectedIndex--
+            updateLevelMenuDisplay()
+        }
+    } else if (menuState == MenuState.Open) {
         if (selectedMenuItem >= 3) {
             selectedMenuItem -= 3
             updateMenuSelection()
@@ -1312,11 +1748,26 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
         }
     } else if (nameMenuState == MenuState.Open) {
         // 昵称菜单不支持上下选择，忽略
+    } else if (
+        menuState == MenuState.Closed &&
+        gameMenuState == MenuState.Closed &&
+        shopMenuState == MenuState.Closed &&
+        configMenuState == MenuState.Closed &&
+        nameMenuState == MenuState.Closed
+    ) {
+        // 等级与奖励系统入口
+        showLevelMenu()
     }
 })
 
 controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
-    if (menuState == MenuState.Open) {
+    if (levelMenuState == MenuState.Open) {
+        const len = getCurrentTasks().length
+        if (levelSelectedIndex < len - 1) {
+            levelSelectedIndex++
+            updateLevelMenuDisplay()
+        }
+    } else if (menuState == MenuState.Open) {
         if (selectedMenuItem + 3 < menuItems.length) {
             selectedMenuItem += 3
             updateMenuSelection()
@@ -1344,7 +1795,9 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
 })
 
 controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
-    if (menuState == MenuState.Open) {
+    if (levelMenuState == MenuState.Open) {
+        claimSelectedTask()
+    } else if (menuState == MenuState.Open) {
         executeMenuItem()
     } else if (gameMenuState == MenuState.Open) {
         executeGameChoice()
@@ -1358,6 +1811,11 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
 })
 
 controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
+    // 若在睡眠模式，B 优先用于唤醒
+    if (sleeping) {
+        stopSleepMode()
+        return
+    }
     if (menuState == MenuState.Open) {
         hideMenu()
     } else if (gameMenuState == MenuState.Open) {
@@ -1366,18 +1824,29 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
     } else if (shopMenuState == MenuState.Open) {
         hideShopMenu()
         showMenu()
+    } else if (levelMenuState == MenuState.Open) {
+        hideLevelMenu()
     } else if (nameMenuState == MenuState.Open) {
         selectedNameIndex = getNextRandomNameIndex()
         sprites.destroyAllSpritesOfKind(MenuKind)
         // 先关闭状态再重建，避免 showNameMenu 提前 return
         nameMenuState = MenuState.Closed
         showNameMenu()
+    } else if (
+        menuState == MenuState.Closed &&
+        gameMenuState == MenuState.Closed &&
+        shopMenuState == MenuState.Closed &&
+        configMenuState == MenuState.Closed &&
+        nameMenuState == MenuState.Closed
+    ) {
+        // 主界面：随机说话
+        petRandomTalk()
     }
 })
 
 // 游戏主循环 - 状态自动衰减
 game.onUpdateInterval(4000, () => {
-    if (gameRunning && pet && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
+    if (gameRunning && pet && !sleeping && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
         // 仅在困难难度时执行
         if (currentDifficulty != Difficulty.Hard) return;
         // 状态自动衰减
@@ -1417,7 +1886,7 @@ game.onUpdateInterval(4000, () => {
  * 普通难度 8000ms 衰减
  */
 game.onUpdateInterval(8000, () => {
-    if (gameRunning && pet && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
+    if (gameRunning && pet && !sleeping && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
         if (currentDifficulty != Difficulty.Normal) return;
         // 状态自动衰减
         hunger = Math.max(0, hunger - 3)
@@ -1449,7 +1918,7 @@ game.onUpdateInterval(8000, () => {
  * 简单难度 16000ms 衰减
  */
 game.onUpdateInterval(16000, () => {
-    if (gameRunning && pet && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
+    if (gameRunning && pet && !sleeping && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
         if (currentDifficulty != Difficulty.Easy) return;
         // 状态自动衰减
         hunger = Math.max(0, hunger - 3)
