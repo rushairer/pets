@@ -56,7 +56,7 @@ let gameRunning = true
 // 新增：难度与昵称配置
 let currentDifficulty: Difficulty = Difficulty.Normal
 let petName = "小可爱"
-const nameCandidates = ["小米","可可","豆豆","皮皮","团子","球球","花生","奶糖","乐乐","萌萌"]
+const nameCandidates = ["小米","可可","豆豆","皮皮","团子","球球","花生","奶糖","乐乐","萌萌","春生"]
 let configMenuState = MenuState.Closed
 let selectedDifficultyIndex = 1   // 默认普通
 let nameMenuState = MenuState.Closed
@@ -233,6 +233,8 @@ let happinessBar: Sprite = null
 let healthBar: Sprite = null
 let cleanlinessBar: Sprite = null
 let energyBar: Sprite = null  // 新增：精力条
+let topTextSprite: Sprite = null
+let bottomTextSprite: Sprite = null
 
 // 按钮精灵
 let feedButton: Sprite = null
@@ -350,8 +352,7 @@ function initGame() {
     pet.setPosition(80, 80)
     
     // 创建UI
-    createUI()
-    
+    createUI()    
     
     // 开始动画
     startPetAnimation()
@@ -359,6 +360,7 @@ function initGame() {
     // 显示欢迎信息
     game.showLongText("欢迎来到电子宠物世界！\n照顾好你的宠物，让它健康快乐地成长！", DialogLayout.Center)
     game.showLongText("菜单:功能 方向:选择\nA:确认 B:返回", DialogLayout.Bottom)
+    updateStatusBars()
 
     // 开始游戏循环
     lastUpdateTime = game.runtime()
@@ -407,33 +409,48 @@ function createUI() {
     energyBar = sprites.create(image.create(28, 4), UIKind)
     energyBar.setPosition(144, 4)
     
+    // 创建文字精灵：顶部与底部（始终重建，避免初始化阶段不显示）
+    if (topTextSprite) topTextSprite.destroy()
+    topTextSprite = sprites.create(image.create(160, 15), UIKind)
+    topTextSprite.setPosition(80, 7)
+    topTextSprite.z = 100
+
+    if (bottomTextSprite) bottomTextSprite.destroy()
+    bottomTextSprite = sprites.create(image.create(160, 15), UIKind)
+    bottomTextSprite.setPosition(80, 112)
+    bottomTextSprite.z = 100
+
     updateStatusBars()
 }
 
 // 更新状态条
 function updateStatusBars() {
     if (!hungerBar || !happinessBar || !healthBar || !cleanlinessBar || !energyBar) return
-    // 清空屏幕文本区域
-    screen.fillRect(0, 0, 160, 15, 0)
-    screen.fillRect(0, 105, 160, 15, 0)
+    // 清空文字精灵内容
+    if (topTextSprite) topTextSprite.image.fill(0)
+    if (bottomTextSprite) bottomTextSprite.image.fill(0)
     
-    // 绘制状态标签 - 顶部一行
-    screen.print("饥饿", 4, 2, 1)
-    screen.print("快乐", 36, 2, 1)
-    screen.print("健康", 68, 2, 1)
-    screen.print("清洁", 100, 2, 1)
-    screen.print("精力", 132, 2, 1)
+    // 绘制状态标签 - 顶部一行（文字精灵）
+    if (topTextSprite) {
+        topTextSprite.image.print("饥饿", 4, 2, 1)
+        topTextSprite.image.print("快乐", 36, 2, 1)
+        topTextSprite.image.print("健康", 68, 2, 1)
+        topTextSprite.image.print("清洁", 100, 2, 1)
+        topTextSprite.image.print("精力", 132, 2, 1)
+    }
 
-    // 昵称显示 - 状态条下面居左
-    screen.print(petName, 4, 8, 1)
+    // 昵称显示 - 左下角（文字精灵底部条）
+    if (bottomTextSprite) {
+        bottomTextSprite.image.print(petName, 4, 2, 1)
+    }
     
-    // 显示时间和昼夜状态
+    // 显示时间和昼夜状态、金钱（文字精灵顶部条）
     let timeStr = currentHour + ":00"
     let dayNightStr = isNight ? "夜晚" : "白天"
-    screen.print(timeStr + " " + dayNightStr, 5, 12, isNight ? 9 : 5)
-    
-    // 显示金钱
-    screen.print("金钱: " + money, 90, 12, 5)
+    if (topTextSprite) {
+        topTextSprite.image.print(timeStr + " " + dayNightStr, 5, 12, isNight ? 9 : 5)
+        topTextSprite.image.print("金钱: " + money, 90, 12, 5)
+    }
     
     // 饥饿度条 (红色)
     hungerBar.image.fill(0)
@@ -455,9 +472,9 @@ function updateStatusBars() {
     energyBar.image.fill(0)
     energyBar.image.fillRect(0, 0, Math.floor(energy * 28 / 100), 4, 8)
     
-    // 底部操作提示
-    if (menuState == MenuState.Closed) {
-        screen.print("按 Menu 键打开菜单", 40, 115, 1)
+    // 底部操作提示（文字精灵底部条）
+    if (menuState == MenuState.Closed && bottomTextSprite) {
+        bottomTextSprite.image.print("菜单键", 120, 2, 1)
     }
 }
 
@@ -1251,12 +1268,14 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
         if (selectedDifficultyIndex > 0) {
             selectedDifficultyIndex--
             sprites.destroyAllSpritesOfKind(MenuKind)
+            configMenuState = MenuState.Closed
             showDifficultyMenu()
         }
     } else if (nameMenuState == MenuState.Open) {
         if (selectedNameIndex > 0) {
             selectedNameIndex--
             sprites.destroyAllSpritesOfKind(MenuKind)
+            nameMenuState = MenuState.Closed
             showNameMenu()
         }
     }
@@ -1282,12 +1301,14 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
         if (selectedDifficultyIndex < 2) {
             selectedDifficultyIndex++
             sprites.destroyAllSpritesOfKind(MenuKind)
+            configMenuState = MenuState.Closed
             showDifficultyMenu()
         }
     } else if (nameMenuState == MenuState.Open) {
         if (selectedNameIndex < Math.min(6, nameCandidates.length) - 1) {
             selectedNameIndex++
             sprites.destroyAllSpritesOfKind(MenuKind)
+            nameMenuState = MenuState.Closed
             showNameMenu()
         }
     }
@@ -1594,6 +1615,9 @@ function finishConfigAndStart() {
     game.showLongText("菜单:功能 方向:选择\nA:确认 B:返回", DialogLayout.Bottom)
     lastUpdateTime = game.runtime()
     effects.confetti.startScreenEffect(500)
+    // 对话框关闭后，主动刷新一次文字精灵，避免初次不显示
+    updateStatusBars()
+   
 }
 
 // 启动游戏
