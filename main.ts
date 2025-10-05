@@ -251,6 +251,51 @@ let dirtyDialogues = [
     "干净的感觉真好！"
 ]
 
+/**
+ * 顶部6x6状态小图标（内联）
+ * 颜色参考：饥饿=红(2)、快乐=黄(5)、健康=绿(7)、清洁=蓝(9)、精力=紫(8)
+ */
+const hungerIcon6 = img`
+. f f f . .
+f f f f f .
+f f f f f f
+f f f f f f
+. f f f f .
+. . f f . .
+`
+const happyIcon6 = img`
+. f f f . .
+f . . . f .
+f . f . f .
+f . . . f .
+. f f f . .
+. . . . . .
+`
+const healthIcon6 = img`
+. f . f . .
+f f f f f .
+. f f f . .
+. . f . . .
+. . f . . .
+. . . . . .
+`
+const cleanIcon6 = img`
+f f f f f .
+f . . . f .
+f . f . f .
+f . . . f .
+f f f f f .
+. . . . . .
+`
+const energyIcon6 = img`
+. f f f . .
+f . . . f .
+f . f . f .
+f . . . f .
+. f f f . .
+. . . . . .
+`
+
 // UI元素
 let hungerBar: Sprite = null
 let happinessBar: Sprite = null
@@ -398,42 +443,42 @@ function createUI() {
     // 创建背景装饰
     createBackground()
     
-    // 状态条背景 - 顶部两行
-    let barBg1 = sprites.create(image.create(30, 6), UIKind)
+    // 状态条背景 - 顶部两行（为6x6图标预留空间：整体右移3px，宽度减6px 保持右端一致）
+    let barBg1 = sprites.create(image.create(24, 6), UIKind)
     barBg1.image.fill(15)
-    barBg1.setPosition(16, 4)
+    barBg1.setPosition(19, 4)
     
-    let barBg2 = sprites.create(image.create(30, 6), UIKind)
+    let barBg2 = sprites.create(image.create(24, 6), UIKind)
     barBg2.image.fill(15)
-    barBg2.setPosition(48, 4)
+    barBg2.setPosition(51, 4)
     
-    let barBg3 = sprites.create(image.create(30, 6), UIKind)
+    let barBg3 = sprites.create(image.create(24, 6), UIKind)
     barBg3.image.fill(15)
-    barBg3.setPosition(80, 4)
+    barBg3.setPosition(83, 4)
     
-    let barBg4 = sprites.create(image.create(30, 6), UIKind)
+    let barBg4 = sprites.create(image.create(24, 6), UIKind)
     barBg4.image.fill(15)
-    barBg4.setPosition(112, 4)
+    barBg4.setPosition(115, 4)
     
-    let barBg5 = sprites.create(image.create(30, 6), UIKind)
+    let barBg5 = sprites.create(image.create(24, 6), UIKind)
     barBg5.image.fill(15)
-    barBg5.setPosition(144, 4)
+    barBg5.setPosition(147, 4)
     
-    // 状态条 - 顶部两行
-    hungerBar = sprites.create(image.create(28, 4), UIKind)
-    hungerBar.setPosition(16, 4)
+    // 状态条 - 顶部两行（右移3px，长度减6px，保证右端对齐）
+    hungerBar = sprites.create(image.create(22, 4), UIKind)
+    hungerBar.setPosition(19, 4)
     
-    happinessBar = sprites.create(image.create(28, 4), UIKind)
-    happinessBar.setPosition(48, 4)
+    happinessBar = sprites.create(image.create(22, 4), UIKind)
+    happinessBar.setPosition(51, 4)
     
-    healthBar = sprites.create(image.create(28, 4), UIKind)
-    healthBar.setPosition(80, 4)
+    healthBar = sprites.create(image.create(22, 4), UIKind)
+    healthBar.setPosition(83, 4)
     
-    cleanlinessBar = sprites.create(image.create(28, 4), UIKind)
-    cleanlinessBar.setPosition(112, 4)
+    cleanlinessBar = sprites.create(image.create(22, 4), UIKind)
+    cleanlinessBar.setPosition(115, 4)
     
-    energyBar = sprites.create(image.create(28, 4), UIKind)
-    energyBar.setPosition(144, 4)
+    energyBar = sprites.create(image.create(22, 4), UIKind)
+    energyBar.setPosition(147, 4)
     
     // 创建文字精灵：顶部与底部（始终重建，避免初始化阶段不显示）
     if (topTextSprite) topTextSprite.destroy()
@@ -460,13 +505,14 @@ function updateStatusBars() {
     if (topTextSprite) topTextSprite.image.fill(0)
     if (bottomTextSprite) bottomTextSprite.image.fill(0)
     
-    // 绘制状态标签 - 顶部一行（文字精灵）
+    // 顶部状态图标（6x6）放在“原始状态条的左边缘”
     if (topTextSprite) {
-        topTextSprite.image.print("饥饿", 4, 2, 1)
-        topTextSprite.image.print("快乐", 36, 2, 1)
-        topTextSprite.image.print("健康", 68, 2, 1)
-        topTextSprite.image.print("清洁", 100, 2, 1)
-        topTextSprite.image.print("精力", 132, 2, 1)
+        // 原始bar左边缘：C-14 -> [1, 33, 65, 97, 129]（整体左移1，下移1）
+        topTextSprite.image.drawTransparentImage(hungerIcon6, 1, 2)
+        topTextSprite.image.drawTransparentImage(happyIcon6, 33, 2)
+        topTextSprite.image.drawTransparentImage(healthIcon6, 65, 2)
+        topTextSprite.image.drawTransparentImage(cleanIcon6, 97, 2)
+        topTextSprite.image.drawTransparentImage(energyIcon6, 129, 2)
     }
 
     // 昵称显示 - 左下角（文字精灵底部条）
@@ -482,25 +528,25 @@ function updateStatusBars() {
         topTextSprite.image.print("金钱: " + money, 90, 12, 5)
     }
     
-    // 饥饿度条 (红色)
+    // 饥饿度条 (红色) — 新宽度22
     hungerBar.image.fill(0)
-    hungerBar.image.fillRect(0, 0, Math.floor(hunger * 28 / 100), 4, 2)
+    hungerBar.image.fillRect(0, 0, Math.floor(hunger * 22 / 100), 4, 2)
     
     // 快乐度条 (黄色)
     happinessBar.image.fill(0)
-    happinessBar.image.fillRect(0, 0, Math.floor(happiness * 28 / 100), 4, 5)
+    happinessBar.image.fillRect(0, 0, Math.floor(happiness * 22 / 100), 4, 5)
     
     // 健康度条 (绿色)
     healthBar.image.fill(0)
-    healthBar.image.fillRect(0, 0, Math.floor(health * 28 / 100), 4, 7)
+    healthBar.image.fillRect(0, 0, Math.floor(health * 22 / 100), 4, 7)
     
     // 清洁度条 (蓝色)
     cleanlinessBar.image.fill(0)
-    cleanlinessBar.image.fillRect(0, 0, Math.floor(cleanliness * 28 / 100), 4, 9)
+    cleanlinessBar.image.fillRect(0, 0, Math.floor(cleanliness * 22 / 100), 4, 9)
     
     // 精力条 (紫色)
     energyBar.image.fill(0)
-    energyBar.image.fillRect(0, 0, Math.floor(energy * 28 / 100), 4, 8)
+    energyBar.image.fillRect(0, 0, Math.floor(energy * 22 / 100), 4, 8)
     
     // 底部操作提示（文字精灵底部条）
     if (menuState == MenuState.Closed && gameMenuState == MenuState.Closed && shopMenuState == MenuState.Closed && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed && bottomTextSprite) {
