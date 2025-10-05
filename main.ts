@@ -38,6 +38,7 @@ enum Difficulty {
 // DEBUG 开关（发布前改为 false 关闭调试功能）
 const DEBUG_MODE = true
 let lastDebugResetTime = 0  // 调试重置去抖时间戳
+let lastCheatTime = 0       // 金手指加钱去抖时间戳
 
 // 游戏变量
 let pet: Sprite = null
@@ -63,6 +64,8 @@ let selectedNameIndex = 0
 
 // 存档功能
 const SAVE_FLAG_KEY = "pet_saved_flag"
+// 首次配置完成标记：1=已完成；0或空=未完成（需弹出难度/昵称菜单）
+const CONFIG_DONE_KEY = "pet_config_done"
 
 // 将状态重置为默认初始值（用于结束后或首次启动）
 function resetDefaults() {
@@ -310,8 +313,9 @@ function updateDayNightCycle() {
 function debugResetGame() {
     if (!DEBUG_MODE) return
 
-    // 清除存档标记，写入默认初始值并保存
+    // 清除存档标记与配置完成标记，写入默认初始值并保存
     settings.writeString(SAVE_FLAG_KEY, "0")
+    settings.writeString(CONFIG_DONE_KEY, "0")
     resetDefaults()
     saveProgress()
 
@@ -335,8 +339,8 @@ function initGame() {
     // 读取存档（若有）
     loadProgress()
 
-    // 若没有存档，进入首次配置流程
-    if (settings.readString(SAVE_FLAG_KEY) != "1") {
+    // 若未完成首次配置，进入难度与昵称菜单
+    if (settings.readString(CONFIG_DONE_KEY) != "1") {
         showDifficultyMenu()
         return
     }
@@ -408,6 +412,7 @@ function createUI() {
 
 // 更新状态条
 function updateStatusBars() {
+    if (!hungerBar || !happinessBar || !healthBar || !cleanlinessBar || !energyBar) return
     // 清空屏幕文本区域
     screen.fillRect(0, 0, 160, 15, 0)
     screen.fillRect(0, 105, 160, 15, 0)
@@ -475,7 +480,7 @@ function startPetAnimation() {
 // 随机移动系统
 function startRandomMovement() {
     game.onUpdateInterval(4000, () => {
-        if (gameRunning && getCurrentPetState() != PetState.Sick) {
+        if (gameRunning && pet && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed && getCurrentPetState() != PetState.Sick) {
             // 随机选择动作
             let action = randint(1, 4)
             switch (action) {
@@ -501,6 +506,7 @@ function startRandomMovement() {
 
 // 宠物跳跃
 function petJump() {
+    if (!pet) return
     let originalY = pet.y
     pet.vy = -30
     pet.ay = 100
@@ -516,6 +522,7 @@ function petJump() {
 
 // 宠物移动
 function petMove() {
+    if (!pet) return
     let originalX = pet.x
     let direction = randint(0, 1) == 0 ? -1 : 1
     let targetX = Math.max(30, Math.min(130, originalX + direction * 20))
@@ -534,6 +541,7 @@ function petMove() {
 
 // 宠物跳舞
 function petDance() {
+    if (!pet) return
     if (getCurrentPetState() == PetState.Happy || getCurrentPetState() == PetState.Normal) {
         animation.stopAnimation(animation.AnimationTypes.All, pet)
         pet.setImage(assets.image`petPlaying`)  // 先设置为玩耍状态图片
@@ -551,6 +559,7 @@ function petDance() {
 
 // 更新宠物状态和外观
 function updatePetState() {
+    if (!pet) return
     let currentState = getCurrentPetState()
     
     // 停止当前动画
@@ -747,6 +756,7 @@ function petSleep() {
 
 // 宠物随机说话
 function petRandomTalk() {
+    if (!pet) return
     let dialogue = getRandomDialogue()
     pet.sayText(dialogue, 2000, false)
     music.playTone(294, 300)
@@ -1011,7 +1021,7 @@ function executeGameChoice() {
     
     hideGameMenu()
     
-    pet.sayText("我选择" + choices[petChoice] + "！", 2000, false)
+    if (pet) pet.sayText("我选择" + choices[petChoice] + "！", 2000, false)
     
     let result = ""
     let reward = 0
@@ -1302,10 +1312,10 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
         hideMenu()
     } else if (gameMenuState == MenuState.Open) {
         hideGameMenu()
+        showMenu()
     } else if (shopMenuState == MenuState.Open) {
         hideShopMenu()
-    } else if (configMenuState == MenuState.Open) {
-        proceedToNameMenu()
+        showMenu()
     } else if (nameMenuState == MenuState.Open) {
         selectedNameIndex = randint(0, Math.min(6, nameCandidates.length) - 1)
         sprites.destroyAllSpritesOfKind(MenuKind)
@@ -1315,7 +1325,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
 
 // 游戏主循环 - 状态自动衰减
 game.onUpdateInterval(4000, () => {
-    if (gameRunning) {
+    if (gameRunning && pet && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
         // 仅在困难难度时执行
         if (currentDifficulty != Difficulty.Hard) return;
         // 状态自动衰减
@@ -1340,7 +1350,7 @@ game.onUpdateInterval(4000, () => {
             health = Math.max(0, health - 1)
         }
         
-        pet.sayText(getRandomDialogue(), 1000, false)
+        if (pet) pet.sayText(getRandomDialogue(), 1000, false)
         updateStatusBars()
         updatePetState()
         
@@ -1355,7 +1365,7 @@ game.onUpdateInterval(4000, () => {
  * 普通难度 8000ms 衰减
  */
 game.onUpdateInterval(8000, () => {
-    if (gameRunning) {
+    if (gameRunning && pet && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
         if (currentDifficulty != Difficulty.Normal) return;
         // 状态自动衰减
         hunger = Math.max(0, hunger - 3)
@@ -1374,7 +1384,7 @@ game.onUpdateInterval(8000, () => {
             happiness = Math.max(0, happiness - 3)
             health = Math.max(0, health - 1)
         }
-        pet.sayText(getRandomDialogue(), 1000, false)
+        if (pet) pet.sayText(getRandomDialogue(), 1000, false)
         updateStatusBars()
         updatePetState()
         if (health <= 0) {
@@ -1387,7 +1397,7 @@ game.onUpdateInterval(8000, () => {
  * 简单难度 16000ms 衰减
  */
 game.onUpdateInterval(16000, () => {
-    if (gameRunning) {
+    if (gameRunning && pet && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
         if (currentDifficulty != Difficulty.Easy) return;
         // 状态自动衰减
         hunger = Math.max(0, hunger - 3)
@@ -1406,7 +1416,7 @@ game.onUpdateInterval(16000, () => {
             happiness = Math.max(0, happiness - 3)
             health = Math.max(0, health - 1)
         }
-        pet.sayText(getRandomDialogue(), 1000, false)
+        if (pet) pet.sayText(getRandomDialogue(), 1000, false)
         updateStatusBars()
         updatePetState()
         if (health <= 0) {
@@ -1427,8 +1437,9 @@ function gameOver() {
     gameRunning = false
     animation.stopAnimation(animation.AnimationTypes.All, pet)
     pet.setImage(assets.image`petSad`)
-    // 清除存档标记，避免下次启动加载到结束状态，并写入默认初始状态
+    // 清除存档标记与配置完成标记，避免下次启动加载到结束状态，并写入默认初始状态
     settings.writeString(SAVE_FLAG_KEY, "0")
+    settings.writeString(CONFIG_DONE_KEY, "0")
     resetDefaults()
     saveProgress()
     
@@ -1438,9 +1449,11 @@ function gameOver() {
 }
 
 
-// 实时更新UI显示
+/**
+ * 实时更新UI显示（仅在宠物已创建且不在配置菜单时执行，避免清屏导致菜单黑屏）
+ */
 game.onUpdateInterval(1000, () => {
-    if (gameRunning) {
+    if (gameRunning && pet && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed) {
         updateStatusBars()
     }
 })
@@ -1461,11 +1474,28 @@ game.onUpdateInterval(10000, () => {
  */
 game.onUpdateInterval(100, () => {
     if (!DEBUG_MODE) return
-    if (controller.A.isPressed() && controller.B.isPressed()) {
+    if (controller.down.isPressed() && controller.A.isPressed() && controller.B.isPressed()) {
         const now = game.runtime()
         if (now - lastDebugResetTime > 1000) {
             lastDebugResetTime = now
             debugResetGame()
+        }
+    }
+})
+
+/**
+ * 隐藏金手指：方向上+A+B 同时按下增加 1000 金钱
+ * 独立于 DEBUG_MODE，采用1秒去抖
+ */
+game.onUpdateInterval(100, () => {
+    if (controller.up.isPressed() && controller.A.isPressed() && controller.B.isPressed()) {
+        const now = game.runtime()
+        if (now - lastCheatTime > 1000) {
+            lastCheatTime = now
+            money += 1000
+            updateStatusBars()
+            effects.confetti.startScreenEffect(500)
+            music.playTone(880, 120)
         }
     }
 })
@@ -1502,7 +1532,7 @@ function showDifficultyMenu() {
 
     const hintImg = image.create(menuBarWidth, menuBarHeight)
     hintImg.fill(menuBarBgColor)
-    hintImg.print("上下选择 A确认 B返回", 3, 3, menuBarFontColor)
+    hintImg.print("上下选择 A确认", 3, 3, menuBarFontColor)
     const hint = sprites.create(hintImg, MenuKind)
     hint.setPosition(menuBarPositionX, menuBarPositionY)
 }
@@ -1549,6 +1579,8 @@ function showNameMenu() {
 function finishConfigAndStart() {
     currentDifficulty = selectedDifficultyIndex as Difficulty
     petName = nameCandidates[selectedNameIndex] || petName
+    // 标记首次配置完成
+    settings.writeString(CONFIG_DONE_KEY, "1")
     saveProgress()
 
     sprites.destroyAllSpritesOfKind(MenuKind)
