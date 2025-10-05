@@ -689,7 +689,7 @@ function showMenu() {
     if (menuState == MenuState.Open) return
     
     menuState = MenuState.Open
-    selectedMenuItem = MenuItem.Feed
+    // 保留上次选中项，不重置
     
     // 创建全屏菜单背景
     let menuBg = sprites.create(image.create(160, 120), MenuKind)
@@ -841,7 +841,7 @@ function showGameMenu() {
     if (gameMenuState == MenuState.Open) return
     
     gameMenuState = MenuState.Open
-    selectedGameChoice = 0
+    // 保留上次选中项，不重置
     
     // 创建游戏菜单背景
     let gameBg = sprites.create(image.create(160, 120), MenuKind)
@@ -989,7 +989,7 @@ function showShopMenu() {
     if (shopMenuState == MenuState.Open) return
     
     shopMenuState = MenuState.Open
-    selectedShopItem = 0
+    // 保留上次选中项，不重置
     
     // 创建购物菜单背景
     let shopBg = sprites.create(image.create(160, 120), MenuKind)
