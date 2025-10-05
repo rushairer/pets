@@ -42,6 +42,17 @@ let currentHour = 8  // 当前时间（0-23）
 let isNight = false
 let dayNightCycle = 0
 
+// 通用菜单样式
+let menuBgColor = 9
+let menuFontColor = 12
+let menuFontBgColor = 0
+let menuSelectedFontColor = 1
+let menuSelectedFontBgColor = 2
+let menuTitleColor = 15
+let menuBarBgColor = 6
+let menuBarFontColor = 5
+
+
 // 菜单系统变量
 let menuState = MenuState.Closed
 let selectedMenuItem = MenuItem.Feed
@@ -208,7 +219,7 @@ function initGame() {
     
     // 显示欢迎信息
     game.showLongText("欢迎来到电子宠物世界！\n照顾好你的宠物，让它健康快乐地成长！", DialogLayout.Center)
-    game.showLongText("按 Menu 键打开菜单\n方向键选择，A确认，B返回", DialogLayout.Bottom)
+    game.showLongText("菜单:功能 方向:选择\nA:确认 B:返回", DialogLayout.Bottom)
 
     // 开始游戏循环
     lastUpdateTime = game.runtime()
@@ -580,6 +591,8 @@ function petRandomTalk() {
     music.playTone(294, 300)
 }
 
+
+
 // 显示菜单
 function showMenu() {
     if (menuState == MenuState.Open) return
@@ -589,14 +602,13 @@ function showMenu() {
     
     // 创建全屏菜单背景
     let menuBg = sprites.create(image.create(160, 120), MenuKind)
-    menuBg.image.fill(1)  // 深蓝色外框
-    menuBg.image.fillRect(3, 3, 154, 114, 15)  // 白色边框
-    menuBg.image.fillRect(6, 6, 148, 108, 9)   // 浅蓝色背景
+    menuBg.image.fill(menuBgColor)  // 深蓝色外框
     menuBg.setPosition(80, 60)
     menuSprites.push(menuBg)
     
     createMenuSprites()
 }
+
 
 // 创建菜单精灵
 function createMenuSprites() {
@@ -607,11 +619,10 @@ function createMenuSprites() {
     }
     
     // 创建标题精灵 - 向上移动
-    let titleImg = image.create(80, 15)
-    titleImg.fill(9)  // 浅蓝色背景
-    titleImg.print("宠物菜单", 10, 0, 15)  // 白色文字，增加垂直间距
+    let titleImg = image.create(60, 15)
+    titleImg.print("宠物菜单", 9, 0, menuTitleColor)  // 白色文字，增加垂直间距
     let titleSprite = sprites.create(titleImg, MenuKind)
-    titleSprite.setPosition(80, 18)
+    titleSprite.setPosition(80, 14)
     menuSprites.push(titleSprite)
     
     // 创建菜单项精灵 - 3x3网格，再增大行高
@@ -626,12 +637,12 @@ function createMenuSprites() {
         
         if (i == selectedMenuItem) {
             // 选中项：红色背景，白色文字，添加箭头
-            itemImg.fill(2)  // 红色背景
-            itemImg.print(menuItems[i].name, 2, 2, 1)  // 白色文字，调整位置
+            itemImg.fill(menuSelectedFontBgColor)  // 红色背景
+            itemImg.print(menuItems[i].name, 2, 2, menuSelectedFontColor)  // 白色文字，调整位置
         } else {
-            // 普通项：浅蓝色背景，深蓝色文字
-            itemImg.fill(9)  // 浅蓝色背景
-            itemImg.print(menuItems[i].name, 2, 2, 8)  // 深蓝色文字，调整位置
+            // 普通项：Menu背景色，深蓝色文字
+            itemImg.fill(menuFontBgColor)  // Menu背景色
+            itemImg.print(menuItems[i].name, 2, 2, menuFontColor)  // 深色文字，调整位置
         }
         
         let itemSprite = sprites.create(itemImg, MenuKind)
@@ -640,11 +651,11 @@ function createMenuSprites() {
     }
     
     // 创建金钱显示精灵 - 移到左下角
-    let moneyImg = image.create(120, 18)
-    moneyImg.fill(9)  // 浅蓝色背景
-    moneyImg.print("金钱:" + money, 2, 5, 5)  // 黄色文字，调整位置
+    let moneyImg = image.create(160, 18)
+    moneyImg.fill(menuBarBgColor)
+    moneyImg.print("钱:" + money, 3, 3, menuBarFontColor)  // 黄色文字，调整位置
     let moneySprite = sprites.create(moneyImg, MenuKind)
-    moneySprite.setPosition(70, 103)  // 移到左下角
+    moneySprite.setPosition(80, 111)  // 移到左下角
     menuSprites.push(moneySprite)
 }
 
