@@ -513,7 +513,7 @@ function feedPet() {
         updateStatusBars()
         
         // 显示反馈
-        game.splash("+20 饥饿度 (剩余食物:" + foodCount + ")")
+        game.showLongText("+20 饥饿度\n(剩余食物:" + foodCount + ")",DialogLayout.Bottom)
         pet.sayText("好香啊！谢谢主人！", 1500, false)
         
         music.playTone(262, 200)
@@ -563,7 +563,7 @@ function healPet() {
         updatePetState()
         
         // 显示反馈
-        game.splash("+30 健康度 (剩余药物:" + medicineCount + ")")
+        game.showLongText("+30 健康度\n(剩余药物:" + medicineCount + ")", DialogLayout.Bottom)
         pet.sayText("药物真有效！感觉好多了！", 1500, false)
         
         music.playTone(392, 200)
@@ -792,11 +792,11 @@ function createGameMenuSprites() {
         gameMenuSprites.splice(i, 1)
     }
     
-    // 创建标题
-    let titleImg = image.create(80, 18)
-    titleImg.print("石头剪刀布", 8, 4, menuTitleColor)
+    // 创建标题 - 使用统一样式
+    let titleImg = image.create(80, menuTitleHeight)
+    titleImg.print("石头剪刀布", 8, 0, menuTitleColor)
     let titleSprite = sprites.create(titleImg, MenuKind)
-    titleSprite.setPosition(80, 25)
+    titleSprite.setPosition(menuTitlePositionX, menuTitlePositionY)
     gameMenuSprites.push(titleSprite)
     
     // 游戏选项
@@ -804,16 +804,16 @@ function createGameMenuSprites() {
     
     for (let i = 0; i < gameChoices.length; i++) {
         let x = 80
-        let y = 50 + i * 25
+        let y = 40 + i * 25
         
         let choiceImg = image.create(50, 18)
         
         if (i == selectedGameChoice) {
             choiceImg.fill(menuSelectedFontBgColor)
-            choiceImg.print(gameChoices[i], 12, 4, menuSelectedFontColor)
+            choiceImg.print(gameChoices[i], 12, 2, menuSelectedFontColor)
         } else {
             choiceImg.fill(menuFontBgColor)
-            choiceImg.print(gameChoices[i], 12, 4, menuFontColor)
+            choiceImg.print(gameChoices[i], 12, 2, menuFontColor)
         }
         
         let choiceSprite = sprites.create(choiceImg, MenuKind)
@@ -821,12 +821,12 @@ function createGameMenuSprites() {
         gameMenuSprites.push(choiceSprite)
     }
     
-    // 操作提示
-    let hintImg = image.create(120, 15)
+    // 操作提示 - 使用统一样式
+    let hintImg = image.create(menuBarWidth, menuBarHeight)
     hintImg.fill(menuBarBgColor)
-    hintImg.print("上下选择 A确认 B返回", 5, 2, menuBarFontColor)
+    hintImg.print("上下选择 A确认 B返回", 3, 3, menuBarFontColor)
     let hintSprite = sprites.create(hintImg, MenuKind)
-    hintSprite.setPosition(80, 105)
+    hintSprite.setPosition(menuBarPositionX, menuBarPositionY)
     gameMenuSprites.push(hintSprite)
 }
 
@@ -928,34 +928,33 @@ function createShopMenuSprites() {
         shopMenuSprites.splice(i, 1)
     }
     
-    // 创建标题
-    let titleImg = image.create(80, 18)
-    titleImg.print("宠物商店", 12, 4, menuTitleColor)
+    // 创建标题 - 使用统一样式
+    let titleImg = image.create(70, menuTitleHeight)
+    titleImg.print("宠物商店", 8, 0, menuTitleColor)
     let titleSprite = sprites.create(titleImg, MenuKind)
-    titleSprite.setPosition(80, 20)
+    titleSprite.setPosition(menuTitlePositionX, menuTitlePositionY)
     shopMenuSprites.push(titleSprite)
     
-    // 显示当前金钱
-    let moneyImg = image.create(100, 15)
-    moneyImg.fill(menuBarBgColor)
-    moneyImg.print("当前金钱: " + money, 5, 2, menuBarFontColor)
+    // 显示当前金钱 - 使用统一Bar样式
+    let moneyImg = image.create(menuBarWidth, menuBarHeight)
+    moneyImg.print("当前金钱: " + money, 5, 3, menuFontColor)
     let moneySprite = sprites.create(moneyImg, MenuKind)
-    moneySprite.setPosition(80, 35)
+    moneySprite.setPosition(menuBarPositionX, 30)
     shopMenuSprites.push(moneySprite)
     
     // 商品选项
     for (let i = 0; i < shopItems.length; i++) {
         let x = 80
-        let y = 55 + i * 25
+        let y = 50 + i * 25
         
         let itemImg = image.create(60, 18)
         
         if (i == selectedShopItem) {
             itemImg.fill(menuSelectedFontBgColor)
-            itemImg.print(shopItems[i].name, 15, 4, menuSelectedFontColor)
+            itemImg.print(shopItems[i].name, 15, 2, menuSelectedFontColor)
         } else {
             itemImg.fill(menuFontBgColor)
-            itemImg.print(shopItems[i].name, 15, 4, menuFontColor)
+            itemImg.print(shopItems[i].name, 15, 2, menuFontColor)
         }
         
         let itemSprite = sprites.create(itemImg, MenuKind)
@@ -963,20 +962,19 @@ function createShopMenuSprites() {
         shopMenuSprites.push(itemSprite)
     }
     
-    // 显示选中商品的价格
-    let priceImg = image.create(100, 15)
-    priceImg.fill(menuBarBgColor)
-    priceImg.print("价格: " + shopItems[selectedShopItem].price + " 金币", 5, 2, menuBarFontColor)
+    // 显示选中商品的价格 - 使用统一Bar样式
+    let priceImg = image.create(menuBarWidth, menuBarHeight)
+    priceImg.print("价格: " + shopItems[selectedShopItem].price + " 金币", 5, 3, menuFontColor)
     let priceSprite = sprites.create(priceImg, MenuKind)
-    priceSprite.setPosition(80, 90)
+    priceSprite.setPosition(menuBarPositionX, 95)
     shopMenuSprites.push(priceSprite)
     
-    // 操作提示
-    let hintImg = image.create(120, 15)
+    // 操作提示 - 使用统一Bar样式
+    let hintImg = image.create(menuBarWidth, menuBarHeight)
     hintImg.fill(menuBarBgColor)
-    hintImg.print("上下选择 A购买 B返回", 5, 2, menuBarFontColor)
+    hintImg.print("上下选择 A购买 B返回", 3, 3, menuBarFontColor)
     let hintSprite = sprites.create(hintImg, MenuKind)
-    hintSprite.setPosition(80, 105)
+    hintSprite.setPosition(menuBarPositionX, menuBarPositionY)
     shopMenuSprites.push(hintSprite)
 }
 
@@ -1012,10 +1010,10 @@ function executePurchase() {
         
         if (item.type == "food") {
             foodCount++
-            game.splash("购买食物成功！剩余金钱:" + money)
+            game.showLongText("购买食物成功！\n剩余金钱:" + money, DialogLayout.Bottom)
         } else if (item.type == "medicine") {
             medicineCount++
-            game.splash("购买药物成功！剩余金钱:" + money)
+            game.showLongText("购买药物成功！\n剩余金钱:" + money, DialogLayout.Bottom)
         }
         
         music.playTone(659, 300)
