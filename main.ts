@@ -37,6 +37,9 @@ enum Difficulty {
 
 const VERSION = "v1.0.1"
 
+// 常量，每多少秒一小时
+const SECONDS_PER_HOUR = 30
+
 // DEBUG 开关（发布前改为 false 关闭调试功能）
 const DEBUG_MODE = true
 let lastDebugResetTime = 0  // 调试重置去抖时间戳
@@ -114,6 +117,7 @@ function resetDefaults() {
     // 计数与领奖状态清零
     dayCounter = 0
     weekIndex = 0
+    weeklyDayCounter = 0
     dailyFeed = 0
     dailyPlay = 0
     dailyClean = 0
@@ -198,6 +202,7 @@ function saveProgress() {
     // 任务与成就 - 计数/索引/领奖标记
     settings.writeNumber("day_counter", dayCounter)
     settings.writeNumber("week_index", weekIndex)
+    settings.writeNumber("weekly_day_counter", weeklyDayCounter)
     settings.writeNumber("daily_feed", dailyFeed)
     settings.writeNumber("daily_play", dailyPlay)
     settings.writeNumber("daily_clean", dailyClean)
@@ -289,6 +294,7 @@ function loadProgress() {
     // 任务与成就（若有）
     const dc = settings.readNumber("day_counter"); if (dc || dc == 0) dayCounter = dc
     const wi = settings.readNumber("week_index"); if (wi || wi == 0) weekIndex = wi
+    const wdc = settings.readNumber("weekly_day_counter"); if (wdc || wdc == 0) weeklyDayCounter = wdc
     const df = settings.readNumber("daily_feed"); if (df || df == 0) dailyFeed = df
     const dp = settings.readNumber("daily_play"); if (dp || dp == 0) dailyPlay = dp
     const dl = settings.readNumber("daily_clean"); if (dl || dl == 0) dailyClean = dl
@@ -511,7 +517,7 @@ function updateDayNightBackground() {
 // 昼夜循环系统
 function updateDayNightCycle() {
     dayNightCycle++
-    if (dayNightCycle >= 30) { // 每30秒一小时
+    if (dayNightCycle >= SECONDS_PER_HOUR) { // 每xx秒一小时
         dayNightCycle = 0
         currentHour = (currentHour + 1) % 24
 
@@ -527,10 +533,11 @@ function updateDayNightCycle() {
         if (currentHour == 0) {
             dayCounter++
             resetDailyCounters()
-            // 周切换：每 7 天一周
-            const newWeek = Math.floor(dayCounter / 7)
-            if (newWeek != weekIndex) {
-                weekIndex = newWeek
+            // 周切换：独立周天计数，每 7 天归零并进位周索引
+            weeklyDayCounter++
+            if (weeklyDayCounter >= 7) {
+                weeklyDayCounter = 0
+                weekIndex++
                 resetWeeklyCounters()
             }
             saveProgress()
@@ -1435,6 +1442,7 @@ let levelMenuSprites: Sprite[] = []
 // 模拟“天/周”推进：currentHour 回到 0 视为新的一天；每 7 天视为新的一周
 let dayCounter = 0
 let weekIndex = 0
+let weeklyDayCounter = 0
 
 // 每日计数
 let dailyFeed = 0
