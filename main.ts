@@ -35,6 +35,8 @@ enum Difficulty {
     Hard     // 4000ms 衰减
 }
 
+const VERSION = "v1.0.1"
+
 // DEBUG 开关（发布前改为 false 关闭调试功能）
 const DEBUG_MODE = true
 let lastDebugResetTime = 0  // 调试重置去抖时间戳
@@ -190,6 +192,15 @@ function saveProgress() {
     settings.writeNumber("claimed_a_lvl15", claimed_a_lvl15 ? 1 : 0)
     settings.writeNumber("claimed_a_money1000", claimed_a_money1000 ? 1 : 0)
     settings.writeNumber("claimed_a_money2000", claimed_a_money2000 ? 1 : 0)
+    // 新增更高等级与金钱成就存档
+    settings.writeNumber("claimed_a_money5000", claimed_a_money5000 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl20", claimed_a_lvl20 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl25", claimed_a_lvl25 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl30", claimed_a_lvl30 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl35", claimed_a_lvl35 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl40", claimed_a_lvl40 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl45", claimed_a_lvl45 ? 1 : 0)
+    settings.writeNumber("claimed_a_lvl50", claimed_a_lvl50 ? 1 : 0)
 }
 
 function loadProgress() {
@@ -254,6 +265,15 @@ function loadProgress() {
     claimed_a_lvl15 = settings.readNumber("claimed_a_lvl15") == 1
     claimed_a_money1000 = settings.readNumber("claimed_a_money1000") == 1
     claimed_a_money2000 = settings.readNumber("claimed_a_money2000") == 1
+    // 新增更高等级与金钱成就读档
+    claimed_a_money5000 = settings.readNumber("claimed_a_money5000") == 1
+    claimed_a_lvl20 = settings.readNumber("claimed_a_lvl20") == 1
+    claimed_a_lvl25 = settings.readNumber("claimed_a_lvl25") == 1
+    claimed_a_lvl30 = settings.readNumber("claimed_a_lvl30") == 1
+    claimed_a_lvl35 = settings.readNumber("claimed_a_lvl35") == 1
+    claimed_a_lvl40 = settings.readNumber("claimed_a_lvl40") == 1
+    claimed_a_lvl45 = settings.readNumber("claimed_a_lvl45") == 1
+    claimed_a_lvl50 = settings.readNumber("claimed_a_lvl50") == 1
 }
 
 // 昼夜系统变量
@@ -1366,6 +1386,15 @@ let claimed_a_lvl10 = false
 let claimed_a_lvl15 = false
 let claimed_a_money1000 = false
 let claimed_a_money2000 = false
+// 新增更高等级与金钱成就标记
+let claimed_a_money5000 = false
+let claimed_a_lvl20 = false
+let claimed_a_lvl25 = false
+let claimed_a_lvl30 = false
+let claimed_a_lvl35 = false
+let claimed_a_lvl40 = false
+let claimed_a_lvl45 = false
+let claimed_a_lvl50 = false
 
 // 等级菜单交互状态
 let levelTab = 0 // 0=每日 1=每周 2=成就
@@ -1488,6 +1517,41 @@ function getAchievementTasks(): Task[] {
             claimed: claimed_a_lvl15, canClaim: level >= 15 && !claimed_a_lvl15
         },
         {
+            id: "a_lvl20", title: "等级达到20", target: 1,
+            progress: level >= 20 ? 1 : 0, rewardXP: 0, rewardMoney: 700,
+            claimed: claimed_a_lvl20, canClaim: level >= 20 && !claimed_a_lvl20
+        },
+        {
+            id: "a_lvl25", title: "等级达到25", target: 1,
+            progress: level >= 25 ? 1 : 0, rewardXP: 0, rewardMoney: 900,
+            claimed: claimed_a_lvl25, canClaim: level >= 25 && !claimed_a_lvl25
+        },
+        {
+            id: "a_lvl30", title: "等级达到30", target: 1,
+            progress: level >= 30 ? 1 : 0, rewardXP: 0, rewardMoney: 1100,
+            claimed: claimed_a_lvl30, canClaim: level >= 30 && !claimed_a_lvl30
+        },
+        {
+            id: "a_lvl35", title: "等级达到35", target: 1,
+            progress: level >= 35 ? 1 : 0, rewardXP: 0, rewardMoney: 1300,
+            claimed: claimed_a_lvl35, canClaim: level >= 35 && !claimed_a_lvl35
+        },
+        {
+            id: "a_lvl40", title: "等级达到40", target: 1,
+            progress: level >= 40 ? 1 : 0, rewardXP: 0, rewardMoney: 1500,
+            claimed: claimed_a_lvl40, canClaim: level >= 40 && !claimed_a_lvl40
+        },
+        {
+            id: "a_lvl45", title: "等级达到45", target: 1,
+            progress: level >= 45 ? 1 : 0, rewardXP: 0, rewardMoney: 1800,
+            claimed: claimed_a_lvl45, canClaim: level >= 45 && !claimed_a_lvl45
+        },
+        {
+            id: "a_lvl50", title: "等级达到50", target: 1,
+            progress: level >= 50 ? 1 : 0, rewardXP: 0, rewardMoney: 2200,
+            claimed: claimed_a_lvl50, canClaim: level >= 50 && !claimed_a_lvl50
+        },
+        {
             id: "a_money500", title: "金钱达到500", target: 1,
             progress: money >= 500 ? 1 : 0, rewardXP: 0, rewardMoney: 150,
             claimed: claimed_a_money500, canClaim: money >= 500 && !claimed_a_money500
@@ -1501,6 +1565,11 @@ function getAchievementTasks(): Task[] {
             id: "a_money2000", title: "金钱达到2000", target: 1,
             progress: money >= 2000 ? 1 : 0, rewardXP: 0, rewardMoney: 400,
             claimed: claimed_a_money2000, canClaim: money >= 2000 && !claimed_a_money2000
+        },
+        {
+            id: "a_money5000", title: "金钱达到5000", target: 1,
+            progress: money >= 5000 ? 1 : 0, rewardXP: 0, rewardMoney: 800,
+            claimed: claimed_a_money5000, canClaim: money >= 5000 && !claimed_a_money5000
         }
     ]
 }
@@ -1540,6 +1609,14 @@ function setClaimedById(id: string) {
         case "a_money500": claimed_a_money500 = true; break
         case "a_money1000": claimed_a_money1000 = true; break
         case "a_money2000": claimed_a_money2000 = true; break
+        case "a_money5000": claimed_a_money5000 = true; break
+        case "a_lvl20": claimed_a_lvl20 = true; break
+        case "a_lvl25": claimed_a_lvl25 = true; break
+        case "a_lvl30": claimed_a_lvl30 = true; break
+        case "a_lvl35": claimed_a_lvl35 = true; break
+        case "a_lvl40": claimed_a_lvl40 = true; break
+        case "a_lvl45": claimed_a_lvl45 = true; break
+        case "a_lvl50": claimed_a_lvl50 = true; break
     }
 }
 
@@ -1642,7 +1719,7 @@ function showLevelMenu() {
         "成就"
     ]
     for (let i = 0; i < 3; i++) {
-        const x = 5 + i * 45
+        const x = 5 + i * 40
         const sel = (i == levelTab)
         tabsImg.print(tabNames[i], x, 3, sel ? menuSelectedFontColor : menuFontColor)
         if (i == 0 && c0 > 0) {
@@ -1701,7 +1778,7 @@ function showLevelMenu() {
     // 页码指示（当前选中序号/总数）
     {
         const pageImg = image.create(menuBarWidth, 8)
-        pageImg.print((levelSelectedIndex + 1) + "/" + tasks.length, menuBarWidth - 30, 0, menuFontColor)
+        pageImg.print((levelSelectedIndex + 1) + "/" + tasks.length, menuBarWidth - 40, 3, menuFontColor, image.font5)
         const pageSprite = sprites.create(pageImg, MenuKind)
         pageSprite.setPosition(menuBarPositionX + 8, 43)
         levelMenuSprites.push(pageSprite)
@@ -2243,19 +2320,19 @@ function showDifficultyMenu() {
     bg.setPosition(80, 60)
 
     const titleImg = image.create(80, menuTitleHeight)
-    titleImg.print("选择难度", 8, 0, menuTitleColor)
+    titleImg.print("选择难度", 14, 0, menuTitleColor)
     const title = sprites.create(titleImg, MenuKind)
     title.setPosition(menuTitlePositionX, menuTitlePositionY)
 
     const labels = ["简单", "普通", "困难"]
     for (let i = 0; i < labels.length; i++) {
-        const choiceImg = image.create(60, 18)
+        const choiceImg = image.create(40, 18)
         if (i == selectedDifficultyIndex) {
             choiceImg.fill(menuSelectedFontBgColor)
-            choiceImg.print(labels[i], 8, 2, menuSelectedFontColor)
+            choiceImg.print(labels[i], 8, 3, menuSelectedFontColor)
         } else {
             choiceImg.fill(menuFontBgColor)
-            choiceImg.print(labels[i], 8, 2, menuFontColor)
+            choiceImg.print(labels[i], 8, 3, menuFontColor)
         }
         const s = sprites.create(choiceImg, MenuKind)
         s.setPosition(80, 40 + i * 25)
@@ -2264,6 +2341,8 @@ function showDifficultyMenu() {
     const hintImg = image.create(menuBarWidth, menuBarHeight)
     hintImg.fill(menuBarBgColor)
     hintImg.print("上下选择 A确认", 3, 3, menuBarFontColor)
+    hintImg.print(VERSION, 120, 7, menuBarFontColor)
+
     const hint = sprites.create(hintImg, MenuKind)
     hint.setPosition(menuBarPositionX, menuBarPositionY)
     updateStatusBars()
@@ -2286,14 +2365,14 @@ function showNameMenu() {
     bg.setPosition(80, 60)
 
     const titleImg = image.create(80, menuTitleHeight)
-    titleImg.print("选择昵称", 8, 0, menuTitleColor)
+    titleImg.print("选择昵称", 14, 0, menuTitleColor)
     const title = sprites.create(titleImg, MenuKind)
     title.setPosition(menuTitlePositionX, menuTitlePositionY)
 
     // 仅显示当前随机昵称（不再支持上下选择列表）
-    const itemImg = image.create(80, 20)
+    const itemImg = image.create(40, 20)
     itemImg.fill(menuSelectedFontBgColor)
-    itemImg.print(nameCandidates[selectedNameIndex] || "未命名", 10, 4, menuSelectedFontColor)
+    itemImg.print(nameCandidates[selectedNameIndex] || "未命名", 8, 3, menuSelectedFontColor)
     const s = sprites.create(itemImg, MenuKind)
     s.setPosition(80, 60)
 
