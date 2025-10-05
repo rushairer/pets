@@ -105,6 +105,9 @@ function resetDefaults() {
     money = 100
     foodCount = 3
     medicineCount = 2
+    // 初始化等级与经验
+    level = 1
+    xp = 0
     currentHour = 8
     isNight = false
     dayNightCycle = 0
@@ -1341,27 +1344,27 @@ interface Task {
 function getDailyTasks(): Task[] {
     return [
         {
-            id: "d_feed3", title: "喂食 3 次", target: 3,
+            id: "d_feed3", title: "喂食3次", target: 3,
             progress: dailyFeed, rewardXP: 10, rewardMoney: 20,
             claimed: claimed_d_feed3, canClaim: dailyFeed >= 3 && !claimed_d_feed3
         },
         {
-            id: "d_play2", title: "玩耍 2 次", target: 2,
+            id: "d_play2", title: "玩耍2次", target: 2,
             progress: dailyPlay, rewardXP: 10, rewardMoney: 20,
             claimed: claimed_d_play2, canClaim: dailyPlay >= 2 && !claimed_d_play2
         },
         {
-            id: "d_clean1", title: "清洁 1 次", target: 1,
+            id: "d_clean1", title: "清洁1次", target: 1,
             progress: dailyClean, rewardXP: 10, rewardMoney: 15,
             claimed: claimed_d_clean1, canClaim: dailyClean >= 1 && !claimed_d_clean1
         },
         {
-            id: "d_heal1", title: "治疗 1 次", target: 1,
+            id: "d_heal1", title: "治疗1次", target: 1,
             progress: dailyHeal, rewardXP: 10, rewardMoney: 20,
             claimed: claimed_d_heal1, canClaim: dailyHeal >= 1 && !claimed_d_heal1
         },
         {
-            id: "d_work1", title: "打工 1 次", target: 1,
+            id: "d_work1", title: "打工1次", target: 1,
             progress: dailyWork, rewardXP: 10, rewardMoney: 30,
             claimed: claimed_d_work1, canClaim: dailyWork >= 1 && !claimed_d_work1
         }
@@ -1371,12 +1374,12 @@ function getDailyTasks(): Task[] {
 function getWeeklyTasks(): Task[] {
     return [
         {
-            id: "w_work5", title: "本周打工 5 次", target: 5,
+            id: "w_work5", title: "本周打工5次", target: 5,
             progress: weeklyWork, rewardXP: 20, rewardMoney: 120,
             claimed: claimed_w_work5, canClaim: weeklyWork >= 5 && !claimed_w_work5
         },
         {
-            id: "w_rps3", title: "本周猜拳胜利 3 次", target: 3,
+            id: "w_rps3", title: "本周猜拳胜利3次", target: 3,
             progress: weeklyRpsWin, rewardXP: 30, rewardMoney: 80,
             claimed: claimed_w_rps3, canClaim: weeklyRpsWin >= 3 && !claimed_w_rps3
         }
@@ -1386,17 +1389,17 @@ function getWeeklyTasks(): Task[] {
 function getAchievementTasks(): Task[] {
     return [
         {
-            id: "a_lvl3", title: "等级达到 3", target: 1,
+            id: "a_lvl3", title: "等级达到3", target: 1,
             progress: level >= 3 ? 1 : 0, rewardXP: 0, rewardMoney: 100,
             claimed: claimed_a_lvl3, canClaim: level >= 3 && !claimed_a_lvl3
         },
         {
-            id: "a_lvl5", title: "等级达到 5", target: 1,
+            id: "a_lvl5", title: "等级达到5", target: 1,
             progress: level >= 5 ? 1 : 0, rewardXP: 0, rewardMoney: 200,
             claimed: claimed_a_lvl5, canClaim: level >= 5 && !claimed_a_lvl5
         },
         {
-            id: "a_money500", title: "金钱达到 500", target: 1,
+            id: "a_money500", title: "金钱达到500", target: 1,
             progress: money >= 500 ? 1 : 0, rewardXP: 0, rewardMoney: 150,
             claimed: claimed_a_money500, canClaim: money >= 500 && !claimed_a_money500
         }
@@ -1502,7 +1505,7 @@ function showLevelMenu() {
     const titleImg = image.create(90, menuTitleHeight)
     titleImg.print("等级与奖励", 8, 0, menuTitleColor)
     const title = sprites.create(titleImg, MenuKind)
-    title.setPosition(menuTitlePositionX, menuTitlePositionY)
+    title.setPosition(menuTitlePositionX, menuTitlePositionY-6)
     levelMenuSprites.push(title)
 
     // 等级与经验条信息
@@ -1516,7 +1519,7 @@ function showLevelMenu() {
     infoImg.fillRect(5, menuBarHeight - 4, barW, 2, 1)
     infoImg.fillRect(5, menuBarHeight - 4, filled, 2, 7)
     const infoSprite = sprites.create(infoImg, MenuKind)
-    infoSprite.setPosition(menuBarPositionX, 35)
+    infoSprite.setPosition(menuBarPositionX, 25)
     levelMenuSprites.push(infoSprite)
 
     // 页签（每日/每周/成就）+ 徽标（可领数量）
@@ -1539,7 +1542,7 @@ function showLevelMenu() {
         tabsImg.print(tabNames[i], x, 3, sel ? menuSelectedFontColor : menuFontColor)
     }
     const tabsSprite = sprites.create(tabsImg, MenuKind)
-    tabsSprite.setPosition(menuBarPositionX, 55)
+    tabsSprite.setPosition(menuBarPositionX, 43)
     levelMenuSprites.push(tabsSprite)
 
     // 任务列表（固定光标在中间行的滚动视窗）
@@ -1550,10 +1553,10 @@ function showLevelMenu() {
     const maxStart = Math.max(0, tasks.length - levelVisibleRows)
     const start = Math.max(0, Math.min(maxStart, levelSelectedIndex - levelCursorRow))
     const end = Math.min(tasks.length, start + levelVisibleRows)
-    const selectedBaseY = 80
-    const baseY = selectedBaseY - (levelCursorRow * 14)
+    const selectedBaseY = 76
+    const baseY = selectedBaseY - (levelCursorRow * 16)
     for (let i = 0; i < end - start; i++) {
-        const itemImg = image.create(menuBarWidth, 14)
+        const itemImg = image.create(menuBarWidth, 16)
         const t = tasks[start + i]
         let status = ""
         if (t.claimed) status = "已领"
@@ -1562,9 +1565,9 @@ function showLevelMenu() {
         const sel = ((start + i) == levelSelectedIndex)
         if (sel) itemImg.fill(menuSelectedFontBgColor)
         itemImg.print(t.title, 5, 3, sel ? menuSelectedFontColor : menuFontColor)
-        itemImg.print(status, 110, 3, sel ? menuSelectedFontColor : menuFontColor)
+        itemImg.print(status, 120, 3, sel ? menuSelectedFontColor : menuFontColor)
         const s = sprites.create(itemImg, MenuKind)
-        s.setPosition(menuBarPositionX, baseY + i * 14)
+        s.setPosition(menuBarPositionX, baseY + i * 16)
         levelMenuSprites.push(s)
     }
     // 上/下滚动箭头提示
@@ -1572,14 +1575,14 @@ function showLevelMenu() {
         const upImg = image.create(menuBarWidth, 8)
         upImg.print("↑", 150, 0, menuFontColor)
         const upS = sprites.create(upImg, MenuKind)
-        upS.setPosition(menuBarPositionX, baseY - 8)
+        upS.setPosition(menuBarPositionX, baseY - 2)
         levelMenuSprites.push(upS)
     }
     if (end < tasks.length) {
         const dnImg = image.create(menuBarWidth, 8)
-        dnImg.print("↓", 150, 0, menuFontColor)
+        dnImg.print("↓", 150, -4, menuFontColor)
         const dnS = sprites.create(dnImg, MenuKind)
-        dnS.setPosition(menuBarPositionX, baseY + (levelVisibleRows * 14))
+        dnS.setPosition(menuBarPositionX, baseY + (levelVisibleRows * 16)-16)
         levelMenuSprites.push(dnS)
     }
 
@@ -1588,7 +1591,7 @@ function showLevelMenu() {
         const pageImg = image.create(menuBarWidth, 8)
         pageImg.print((levelSelectedIndex + 1) + "/" + tasks.length, menuBarWidth - 35, 0, menuFontColor)
         const pageSprite = sprites.create(pageImg, MenuKind)
-        pageSprite.setPosition(menuBarPositionX, 63)
+        pageSprite.setPosition(menuBarPositionX+8, 43)
         levelMenuSprites.push(pageSprite)
     }
 
