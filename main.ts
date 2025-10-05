@@ -157,6 +157,7 @@ function saveProgress() {
     // 昼夜
     settings.writeNumber("pet_currentHour", currentHour)
     settings.writeNumber("pet_isNight", isNight ? 1 : 0)
+    settings.writeNumber("pet_dayNightCycle", dayNightCycle)
     // 难度与昵称
     settings.writeNumber("game_difficulty", currentDifficulty)
     settings.writeString("pet_name", petName)
@@ -208,6 +209,7 @@ function loadProgress() {
     // 昼夜
     currentHour = settings.readNumber("pet_currentHour")
     isNight = settings.readNumber("pet_isNight") == 1
+    const dnc = settings.readNumber("pet_dayNightCycle"); if (dnc || dnc == 0) dayNightCycle = Math.max(0, Math.min(29, dnc))
 
     // 难度与昵称（若为空使用默认）
     const d = settings.readNumber("game_difficulty")
@@ -617,7 +619,10 @@ function updateStatusBars() {
     }
     
     // 显示时间和昼夜状态、金钱（文字精灵顶部条）
-    let timeStr = currentHour + ":00"
+    // 分钟按 00' 格式显示（每秒刷新，30秒=1小时 => 每步+2分钟）
+    let _minutes = Math.floor(dayNightCycle * 2)
+    let _minuteStr = (_minutes < 10 ? "0" : "") + _minutes
+    let timeStr = currentHour + ":" + _minuteStr
     if (topTextSprite) {
         topTextSprite.image.print(timeStr, 5, 12, isNight ? 5 : 8)
         // 可领取任务徽标（★n）
