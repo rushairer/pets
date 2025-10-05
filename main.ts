@@ -26,6 +26,19 @@ enum MenuItem {
     Shop       // 购物
 }
 
+/**
+ * 难度枚举
+ */
+enum Difficulty {
+    Easy,    // 16000ms 衰减
+    Normal,  // 8000ms 衰减
+    Hard     // 4000ms 衰减
+}
+
+// DEBUG 开关（发布前改为 false 关闭调试功能）
+const DEBUG_MODE = true
+let lastDebugResetTime = 0  // 调试重置去抖时间戳
+
 // 游戏变量
 let pet: Sprite = null
 let hunger = 50
@@ -38,6 +51,15 @@ let foodCount = 3  // 新增：食物数量
 let medicineCount = 2  // 新增：药物数量
 let lastUpdateTime = 0
 let gameRunning = true
+
+// 新增：难度与昵称配置
+let currentDifficulty: Difficulty = Difficulty.Normal
+let petName = "小可爱"
+const nameCandidates = ["小米","可可","豆豆","皮皮","团子","球球","花生","奶糖","乐乐","萌萌"]
+let configMenuState = MenuState.Closed
+let selectedDifficultyIndex = 1   // 默认普通
+let nameMenuState = MenuState.Closed
+let selectedNameIndex = 0
 
 // 存档功能
 const SAVE_FLAG_KEY = "pet_saved_flag"
@@ -73,6 +95,9 @@ function saveProgress() {
     // 昼夜
     settings.writeNumber("pet_currentHour", currentHour)
     settings.writeNumber("pet_isNight", isNight ? 1 : 0)
+    // 难度与昵称
+    settings.writeNumber("game_difficulty", currentDifficulty)
+    settings.writeString("pet_name", petName)
 }
 
 function loadProgress() {
@@ -93,6 +118,15 @@ function loadProgress() {
     currentHour = settings.readNumber("pet_currentHour")
     isNight = settings.readNumber("pet_isNight") == 1
 
+    // 难度与昵称（若为空使用默认）
+    const d = settings.readNumber("game_difficulty")
+    if (d === 0 || d === 1 || d === 2) {
+        currentDifficulty = d as Difficulty
+    }
+    const n = settings.readString("pet_name")
+    if (n && n.length > 0) {
+        petName = n
+    }
 
 }
 
@@ -269,10 +303,43 @@ function updateDayNightCycle() {
     }
 }
 
+/**
+ * 调试重置：清空存档并重启游戏
+ * 仅在 DEBUG_MODE 为 true 时由组合键触发
+ */
+function debugResetGame() {
+    if (!DEBUG_MODE) return
+
+    // 清除存档标记，写入默认初始值并保存
+    settings.writeString(SAVE_FLAG_KEY, "0")
+    resetDefaults()
+    saveProgress()
+
+    // 清理菜单与界面精灵
+    sprites.destroyAllSpritesOfKind(MenuKind)
+    sprites.destroyAllSpritesOfKind(UIKind)
+    sprites.destroyAllSpritesOfKind(DecorationKind)
+    if (pet) {
+        pet.destroy()
+        pet = null
+    }
+
+    // 重启运行状态并重新初始化
+    gameRunning = true
+    screen.fillRect(0, 0, 160, 120, 0)
+    initGame()
+}
+
 // 初始化游戏
 function initGame() {
     // 读取存档（若有）
     loadProgress()
+
+    // 若没有存档，进入首次配置流程
+    if (settings.readString(SAVE_FLAG_KEY) != "1") {
+        showDifficultyMenu()
+        return
+    }
     
     // 创建宠物精灵 - 放在屏幕中央
     pet = sprites.create(assets.image`petNormal`, SpriteKind.Player)
@@ -351,6 +418,9 @@ function updateStatusBars() {
     screen.print("健康", 68, 2, 1)
     screen.print("清洁", 100, 2, 1)
     screen.print("精力", 132, 2, 1)
+
+    // 昵称显示 - 状态条下面居左
+    screen.print(petName, 4, 8, 1)
     
     // 显示时间和昼夜状态
     let timeStr = currentHour + ":00"
@@ -1167,6 +1237,18 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
             selectedShopItem--
             updateShopMenuDisplay()
         }
+    } else if (configMenuState == MenuState.Open) {
+        if (selectedDifficultyIndex > 0) {
+            selectedDifficultyIndex--
+            sprites.destroyAllSpritesOfKind(MenuKind)
+            showDifficultyMenu()
+        }
+    } else if (nameMenuState == MenuState.Open) {
+        if (selectedNameIndex > 0) {
+            selectedNameIndex--
+            sprites.destroyAllSpritesOfKind(MenuKind)
+            showNameMenu()
+        }
     }
 })
 
@@ -1186,6 +1268,18 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
             selectedShopItem++
             updateShopMenuDisplay()
         }
+    } else if (configMenuState == MenuState.Open) {
+        if (selectedDifficultyIndex < 2) {
+            selectedDifficultyIndex++
+            sprites.destroyAllSpritesOfKind(MenuKind)
+            showDifficultyMenu()
+        }
+    } else if (nameMenuState == MenuState.Open) {
+        if (selectedNameIndex < Math.min(6, nameCandidates.length) - 1) {
+            selectedNameIndex++
+            sprites.destroyAllSpritesOfKind(MenuKind)
+            showNameMenu()
+        }
     }
 })
 
@@ -1196,6 +1290,10 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
         executeGameChoice()
     } else if (shopMenuState == MenuState.Open) {
         executePurchase()
+    } else if (configMenuState == MenuState.Open) {
+        proceedToNameMenu()
+    } else if (nameMenuState == MenuState.Open) {
+        finishConfigAndStart()
     }
 })
 
@@ -1206,12 +1304,20 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
         hideGameMenu()
     } else if (shopMenuState == MenuState.Open) {
         hideShopMenu()
+    } else if (configMenuState == MenuState.Open) {
+        proceedToNameMenu()
+    } else if (nameMenuState == MenuState.Open) {
+        selectedNameIndex = randint(0, Math.min(6, nameCandidates.length) - 1)
+        sprites.destroyAllSpritesOfKind(MenuKind)
+        showNameMenu()
     }
 })
 
 // 游戏主循环 - 状态自动衰减
 game.onUpdateInterval(4000, () => {
     if (gameRunning) {
+        // 仅在困难难度时执行
+        if (currentDifficulty != Difficulty.Hard) return;
         // 状态自动衰减
         hunger = Math.max(0, hunger - 3)
         happiness = Math.max(0, happiness - 2)
@@ -1239,6 +1345,70 @@ game.onUpdateInterval(4000, () => {
         updatePetState()
         
         // 检查游戏结束条件
+        if (health <= 0) {
+            gameOver()
+        }
+    }
+})
+
+/**
+ * 普通难度 8000ms 衰减
+ */
+game.onUpdateInterval(8000, () => {
+    if (gameRunning) {
+        if (currentDifficulty != Difficulty.Normal) return;
+        // 状态自动衰减
+        hunger = Math.max(0, hunger - 3)
+        happiness = Math.max(0, happiness - 2)
+        health = Math.max(0, health - 1)
+        cleanliness = Math.max(0, cleanliness - 2)
+        energy = Math.max(0, energy - (isNight ? 3 : 2))
+        if (hunger < 20) {
+            health = Math.max(0, health - 2)
+            happiness = Math.max(0, happiness - 2)
+        }
+        if (cleanliness < 20) {
+            health = Math.max(0, health - 1)
+        }
+        if (energy < 20) {
+            happiness = Math.max(0, happiness - 3)
+            health = Math.max(0, health - 1)
+        }
+        pet.sayText(getRandomDialogue(), 1000, false)
+        updateStatusBars()
+        updatePetState()
+        if (health <= 0) {
+            gameOver()
+        }
+    }
+})
+
+/**
+ * 简单难度 16000ms 衰减
+ */
+game.onUpdateInterval(16000, () => {
+    if (gameRunning) {
+        if (currentDifficulty != Difficulty.Easy) return;
+        // 状态自动衰减
+        hunger = Math.max(0, hunger - 3)
+        happiness = Math.max(0, happiness - 2)
+        health = Math.max(0, health - 1)
+        cleanliness = Math.max(0, cleanliness - 2)
+        energy = Math.max(0, energy - (isNight ? 3 : 2))
+        if (hunger < 20) {
+            health = Math.max(0, health - 2)
+            happiness = Math.max(0, happiness - 2)
+        }
+        if (cleanliness < 20) {
+            health = Math.max(0, health - 1)
+        }
+        if (energy < 20) {
+            happiness = Math.max(0, happiness - 3)
+            health = Math.max(0, health - 1)
+        }
+        pet.sayText(getRandomDialogue(), 1000, false)
+        updateStatusBars()
+        updatePetState()
         if (health <= 0) {
             gameOver()
         }
@@ -1284,6 +1454,115 @@ game.onUpdateInterval(10000, () => {
         saveProgress()
     }
 })
+
+/**
+ * 调试组合键检测：A+B 同时按下清空存档并重启
+ * 采用短周期检测与1秒去抖，避免误触与连触
+ */
+game.onUpdateInterval(100, () => {
+    if (!DEBUG_MODE) return
+    if (controller.A.isPressed() && controller.B.isPressed()) {
+        const now = game.runtime()
+        if (now - lastDebugResetTime > 1000) {
+            lastDebugResetTime = now
+            debugResetGame()
+        }
+    }
+})
+
+/**
+ * 首次配置：难度选择菜单
+ */
+function showDifficultyMenu() {
+    if (configMenuState == MenuState.Open) return
+    configMenuState = MenuState.Open
+
+    const bg = sprites.create(image.create(160, 120), MenuKind)
+    bg.image.fill(menuBgColor)
+    bg.setPosition(80, 60)
+
+    const titleImg = image.create(80, menuTitleHeight)
+    titleImg.print("选择难度", 8, 0, menuTitleColor)
+    const title = sprites.create(titleImg, MenuKind)
+    title.setPosition(menuTitlePositionX, menuTitlePositionY)
+
+    const labels = ["简单", "普通", "困难"]
+    for (let i = 0; i < labels.length; i++) {
+        const choiceImg = image.create(60, 18)
+        if (i == selectedDifficultyIndex) {
+            choiceImg.fill(menuSelectedFontBgColor)
+            choiceImg.print(labels[i], 8, 2, menuSelectedFontColor)
+        } else {
+            choiceImg.fill(menuFontBgColor)
+            choiceImg.print(labels[i], 8, 2, menuFontColor)
+        }
+        const s = sprites.create(choiceImg, MenuKind)
+        s.setPosition(80, 40 + i * 25)
+    }
+
+    const hintImg = image.create(menuBarWidth, menuBarHeight)
+    hintImg.fill(menuBarBgColor)
+    hintImg.print("上下选择 A确认 B返回", 3, 3, menuBarFontColor)
+    const hint = sprites.create(hintImg, MenuKind)
+    hint.setPosition(menuBarPositionX, menuBarPositionY)
+}
+
+function proceedToNameMenu() {
+    sprites.destroyAllSpritesOfKind(MenuKind)
+    configMenuState = MenuState.Closed
+    showNameMenu()
+}
+
+function showNameMenu() {
+    if (nameMenuState == MenuState.Open) return
+    nameMenuState = MenuState.Open
+
+    const bg = sprites.create(image.create(160, 120), MenuKind)
+    bg.image.fill(menuBgColor)
+    bg.setPosition(80, 60)
+
+    const titleImg = image.create(80, menuTitleHeight)
+    titleImg.print("选择昵称", 8, 0, menuTitleColor)
+    const title = sprites.create(titleImg, MenuKind)
+    title.setPosition(menuTitlePositionX, menuTitlePositionY)
+
+    for (let i = 0; i < 6 && i < nameCandidates.length; i++) {
+        const itemImg = image.create(60, 18)
+        if (i == selectedNameIndex) {
+            itemImg.fill(menuSelectedFontBgColor)
+            itemImg.print(nameCandidates[i], 6, 2, menuSelectedFontColor)
+        } else {
+            itemImg.fill(menuFontBgColor)
+            itemImg.print(nameCandidates[i], 6, 2, menuFontColor)
+        }
+        const s = sprites.create(itemImg, MenuKind)
+        s.setPosition(80, 40 + i * 18 + (i >= 3 ? 7 : 0))
+    }
+
+    const hintImg = image.create(menuBarWidth, menuBarHeight)
+    hintImg.fill(menuBarBgColor)
+    hintImg.print("上下选择 A确认 B随机", 3, 3, menuBarFontColor)
+    const hint = sprites.create(hintImg, MenuKind)
+    hint.setPosition(menuBarPositionX, menuBarPositionY)
+}
+
+function finishConfigAndStart() {
+    currentDifficulty = selectedDifficultyIndex as Difficulty
+    petName = nameCandidates[selectedNameIndex] || petName
+    saveProgress()
+
+    sprites.destroyAllSpritesOfKind(MenuKind)
+    nameMenuState = MenuState.Closed
+
+    pet = sprites.create(assets.image`petNormal`, SpriteKind.Player)
+    pet.setPosition(80, 80)
+    createUI()
+    startPetAnimation()
+    game.showLongText("欢迎来到电子宠物世界！\n照顾好你的宠物，让它健康快乐地成长！", DialogLayout.Center)
+    game.showLongText("菜单:功能 方向:选择\nA:确认 B:返回", DialogLayout.Bottom)
+    lastUpdateTime = game.runtime()
+    effects.confetti.startScreenEffect(500)
+}
 
 // 启动游戏
 initGame()
