@@ -60,7 +60,7 @@ let sleepSayToggle = true
 // 新增：难度与昵称配置
 let currentDifficulty: Difficulty = Difficulty.Normal
 let petName = "小可爱"
-const nameCandidates = ["小米","可可","豆豆","皮皮","团子","球球","花生","奶糖","乐乐","萌萌","春生"]
+const nameCandidates = ["小米", "可可", "豆豆", "皮皮", "团子", "球球", "花生", "奶糖", "乐乐", "萌萌", "春生"]
 let configMenuState = MenuState.Closed
 let selectedDifficultyIndex = 1   // 默认普通
 let nameMenuState = MenuState.Closed
@@ -419,11 +419,11 @@ function updateDayNightCycle() {
     if (dayNightCycle >= 30) { // 每30秒一小时
         dayNightCycle = 0
         currentHour = (currentHour + 1) % 24
-        
+
         // 判断是否为夜晚 (19:00-6:00)
         let wasNight = isNight
         isNight = currentHour >= 19 || currentHour < 6
-        
+
         // 如果昼夜状态改变，更新背景
         if (wasNight !== isNight) {
             updateDayNightBackground()
@@ -440,7 +440,7 @@ function updateDayNightCycle() {
             }
             saveProgress()
         }
-        
+
         // 夜晚时精力消耗加快
         if (isNight) {
             energy = Math.max(0, energy - 5)
@@ -506,17 +506,17 @@ function initGame() {
         showDifficultyMenu()
         return
     }
-    
+
     // 创建宠物精灵 - 放在屏幕中央
     pet = sprites.create(assets.image`petNormal`, SpriteKind.Player)
     pet.setPosition(80, 80)
-    
+
     // 创建UI
-    createUI()    
-    
+    createUI()
+
     // 开始动画
     startPetAnimation()
-    
+
     // 显示欢迎信息
     game.showLongText("欢迎来到电子宠物世界！\n照顾好你的宠物，让它健康快乐地成长！", DialogLayout.Center)
     game.showLongText("菜单:功能 方向:选择\nA:确认 B:返回", DialogLayout.Bottom)
@@ -531,44 +531,44 @@ function initGame() {
 function createUI() {
     // 创建背景装饰
     createBackground()
-    
+
     // 状态条背景 - 顶部两行（为6x6图标预留空间：整体右移3px，宽度减6px 保持右端一致）
     let barBg1 = sprites.create(image.create(24, 6), UIKind)
     barBg1.image.fill(15)
     barBg1.setPosition(19, 4)
-    
+
     let barBg2 = sprites.create(image.create(24, 6), UIKind)
     barBg2.image.fill(15)
     barBg2.setPosition(51, 4)
-    
+
     let barBg3 = sprites.create(image.create(24, 6), UIKind)
     barBg3.image.fill(15)
     barBg3.setPosition(83, 4)
-    
+
     let barBg4 = sprites.create(image.create(24, 6), UIKind)
     barBg4.image.fill(15)
     barBg4.setPosition(115, 4)
-    
+
     let barBg5 = sprites.create(image.create(24, 6), UIKind)
     barBg5.image.fill(15)
     barBg5.setPosition(147, 4)
-    
+
     // 状态条 - 顶部两行（右移3px，长度减6px，保证右端对齐）
     hungerBar = sprites.create(image.create(22, 4), UIKind)
     hungerBar.setPosition(19, 4)
-    
+
     happinessBar = sprites.create(image.create(22, 4), UIKind)
     happinessBar.setPosition(51, 4)
-    
+
     healthBar = sprites.create(image.create(22, 4), UIKind)
     healthBar.setPosition(83, 4)
-    
+
     cleanlinessBar = sprites.create(image.create(22, 4), UIKind)
     cleanlinessBar.setPosition(115, 4)
-    
+
     energyBar = sprites.create(image.create(22, 4), UIKind)
     energyBar.setPosition(147, 4)
-    
+
     // 创建文字精灵：顶部与底部（始终重建，避免初始化阶段不显示）
     if (topTextSprite) topTextSprite.destroy()
     topTextSprite = sprites.create(image.create(160, 25), UIKind)
@@ -602,7 +602,7 @@ function updateStatusBars() {
     // 清空文字精灵内容
     if (topTextSprite) topTextSprite.image.fill(0)
     if (bottomTextSprite) bottomTextSprite.image.fill(0)
-    
+
     // 顶部状态图标（6x6）放在“原始状态条的左边缘”
     if (topTextSprite) {
         // 原始bar左边缘：C-14 -> [1, 33, 65, 97, 129]（整体左移1，下移1）
@@ -617,7 +617,7 @@ function updateStatusBars() {
     if (bottomTextSprite) {
         bottomTextSprite.image.print(petName, 4, 2, 1)
     }
-    
+
     // 显示时间和昼夜状态、金钱（文字精灵顶部条）
     // 分钟按 00' 格式显示（每秒刷新，30秒=1小时 => 每步+2分钟）
     let _minutes = Math.floor(dayNightCycle * 2)
@@ -631,30 +631,30 @@ function updateStatusBars() {
         const _cAch = getAchievementTasks().filter(t => t.canClaim).length
         const _cAll = _cDaily + _cWeekly + _cAch
         if (_cAll > 0) {
-            topTextSprite.image.print("↑" + _cAll, 140, 12, 2,image.font8)
+            topTextSprite.image.print("↑" + _cAll, 140, 12, 2, image.font8)
         }
     }
-    
+
     // 饥饿度条 (红色) — 新宽度22
     hungerBar.image.fill(0)
     hungerBar.image.fillRect(0, 0, Math.floor(hunger * 22 / 100), 4, 2)
-    
+
     // 快乐度条 (黄色)
     happinessBar.image.fill(0)
     happinessBar.image.fillRect(0, 0, Math.floor(happiness * 22 / 100), 4, 5)
-    
+
     // 健康度条 (绿色)
     healthBar.image.fill(0)
     healthBar.image.fillRect(0, 0, Math.floor(health * 22 / 100), 4, 7)
-    
+
     // 清洁度条 (蓝色)
     cleanlinessBar.image.fill(0)
     cleanlinessBar.image.fillRect(0, 0, Math.floor(cleanliness * 22 / 100), 4, 9)
-    
+
     // 精力条 (紫色)
     energyBar.image.fill(0)
     energyBar.image.fillRect(0, 0, Math.floor(energy * 22 / 100), 4, 8)
-    
+
     // 底部操作提示（文字精灵底部条）
     if (menuState == MenuState.Closed && gameMenuState == MenuState.Closed && shopMenuState == MenuState.Closed && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed && bottomTextSprite) {
         bottomTextSprite.image.print("↑/↓", 140, 6, 1, image.font8)
@@ -666,10 +666,10 @@ function startPetAnimation() {
     updatePetState()
     // 启动闲置动画
     animation.runImageAnimation(pet, assets.animation`petIdleAnimation`, 2000, true)
-    
+
     // 随机移动
     startRandomMovement()
-    
+
     game.onUpdateInterval(3000, () => {
         if (gameRunning && !sleeping) {
             updatePetState()
@@ -710,7 +710,7 @@ function petJump() {
     let originalY = pet.y
     pet.vy = -30
     pet.ay = 100
-    
+
     // 使用setTimeout替代timer.after
     setTimeout(() => {
         if (!gameRunning || !pet) return
@@ -727,9 +727,9 @@ function petMove() {
     let originalX = pet.x
     let direction = randint(0, 1) == 0 ? -1 : 1
     let targetX = Math.max(30, Math.min(130, originalX + direction * 20))
-    
+
     pet.vx = direction * 15
-    
+
     // 使用setTimeout替代timer.after
     setTimeout(() => {
         if (!gameRunning || !pet) return
@@ -748,10 +748,10 @@ function petDance() {
         animation.stopAnimation(animation.AnimationTypes.All, pet)
         pet.setImage(assets.image`petPlaying`)  // 先设置为玩耍状态图片
         animation.runImageAnimation(pet, assets.animation`petDanceAnimation`, 800, false)
-        
+
         // 跳舞时的特效
         effects.hearts.startScreenEffect(2000)
-        
+
         // 使用setTimeout替代timer.after
         setTimeout(() => {
             if (!gameRunning || !pet) return
@@ -765,10 +765,10 @@ function updatePetState() {
     if (!pet) return
     if (sleeping) return
     let currentState = getCurrentPetState()
-    
+
     // 停止当前动画
     animation.stopAnimation(animation.AnimationTypes.All, pet)
-    
+
     switch (currentState) {
         case PetState.Happy:
             pet.setImage(assets.image`petPlaying`)  // 使用玩耍图片表示开心
@@ -811,7 +811,7 @@ function getCurrentPetState(): PetState {
 function getRandomDialogue(): string {
     let currentState = getCurrentPetState()
     let dialogues: string[] = []
-    
+
     switch (currentState) {
         case PetState.Happy:
             dialogues = happyDialogues
@@ -829,7 +829,7 @@ function getRandomDialogue(): string {
             dialogues = normalDialogues
             break
     }
-    
+
     let randomIndex = randint(0, dialogues.length - 1)
     return dialogues[randomIndex]
 }
@@ -841,28 +841,28 @@ function feedPet() {
         pet.sayText("主人，我饿了但是没有食物...", 2000, false)
         return
     }
-    
+
     if (hunger < 100) {
         // 消耗食物
         foodCount--
-        
+
         // 显示吃东西状态
         animation.stopAnimation(animation.AnimationTypes.All, pet)
         pet.setImage(assets.image`petEating`)
-        
+
         hunger = Math.min(100, hunger + 20)
         happiness = Math.min(100, happiness + 5)
         gainXP(5)
         updateStatusBars()
-        
+
         // 计数与反馈
         dailyFeed++
         // 显示反馈
-        game.showLongText("+20 饥饿度\n(剩余食物:" + foodCount + ")",DialogLayout.Bottom)
+        game.showLongText("+20 饥饿度\n(剩余食物:" + foodCount + ")", DialogLayout.Bottom)
         pet.sayText("好香啊！谢谢主人！", 1500, false)
-        
+
         music.playTone(262, 200)
-        
+
         // 2秒后恢复正常状态
         setTimeout(() => {
             updatePetState()
@@ -881,15 +881,15 @@ function playWithPet() {
         energy = Math.max(0, energy - 5)  // 玩耍消耗精力
         gainXP(8)
         updateStatusBars()
-        
+
         // 特殊动画 - 跳舞
         petDance()
-        
+
         // 计数与反馈
         dailyPlay++
         // 显示反馈
         game.splash("+25 快乐度")
-        
+
         music.playTone(330, 200)
     }
 }
@@ -901,22 +901,22 @@ function healPet() {
         pet.sayText("主人，我生病了但是没有药物...", 2000, false)
         return
     }
-    
+
     if (health < 100) {
         // 消耗药物
         medicineCount--
-        
+
         health = Math.min(100, health + 30)
         gainXP(10)
         updateStatusBars()
         updatePetState()
-        
+
         // 计数与反馈
         dailyHeal++
         // 显示反馈
         game.showLongText("+30 健康度\n(剩余药物:" + medicineCount + ")", DialogLayout.Bottom)
         pet.sayText("药物真有效！感觉好多了！", 1500, false)
-        
+
         music.playTone(392, 200)
     } else {
         game.splash("宠物很健康！")
@@ -931,12 +931,12 @@ function cleanPet() {
         gainXP(6)
         updateStatusBars()
         updatePetState()
-        
+
         // 计数与反馈
         dailyClean++
         // 显示反馈
         game.splash("+35 清洁度")
-        
+
         music.playTone(523, 200)
     }
 }
@@ -981,16 +981,16 @@ function petSleep() {
             stopSleepMode()
         } else {
             setTimeout(tick, 1000)
-    // 最长睡眠时长：30秒，超时自动醒来（自动完成时直接加满精力）
-    setTimeout(() => {
-        if (sleeping) {
-            energy = 100
-            if (health < 100) health = Math.min(100, health + 3)
-            updateStatusBars()
-            if (pet) pet.sayText("睡饱了，精神满满！", 1500, false)
-            stopSleepMode()
-        }
-    }, SLEEP_MAX_MS)
+            // 最长睡眠时长：30秒，超时自动醒来（自动完成时直接加满精力）
+            setTimeout(() => {
+                if (sleeping) {
+                    energy = 100
+                    if (health < 100) health = Math.min(100, health + 3)
+                    updateStatusBars()
+                    if (pet) pet.sayText("睡饱了，精神满满！", 1500, false)
+                    stopSleepMode()
+                }
+            }, SLEEP_MAX_MS)
         }
     }
     setTimeout(tick, 1000)
@@ -1020,16 +1020,16 @@ function showMenu() {
     if (menuState == MenuState.Open) return
     // 若正处于睡眠，打开菜单前先唤醒，避免睡眠状态卡住
     if (sleeping) stopSleepMode()
-    
+
     menuState = MenuState.Open
     // 保留上次选中项，不重置
-    
+
     // 创建全屏菜单背景
     let menuBg = sprites.create(image.create(160, 120), MenuKind)
     menuBg.image.fill(menuBgColor)  // 深蓝色外框
     menuBg.setPosition(80, 60)
     menuSprites.push(menuBg)
-    
+
     createMenuSprites()
     updateStatusBars()
 }
@@ -1042,24 +1042,24 @@ function createMenuSprites() {
         menuSprites[i].destroy()
         menuSprites.splice(i, 1)
     }
-    
+
     // 创建标题精灵 - 向上移动
     let titleImg = image.create(60, menuTitleHeight)
     titleImg.print("宠物菜单", 6, 0, menuTitleColor)  // 白色文字，增加垂直间距
     let titleSprite = sprites.create(titleImg, MenuKind)
     titleSprite.setPosition(menuTitlePositionX, menuTitlePositionY)
     menuSprites.push(titleSprite)
-    
+
     // 创建菜单项精灵 - 3x3网格，再增大行高
     for (let i = 0; i < menuItems.length; i++) {
         let row = Math.floor(i / 3)
         let col = i % 3
         let y = 35 + row * 25  // 再增加行高到25
         let x = 40 + col * 40
-        
+
         let itemImg = image.create(30, 18)  // 再增加高度到18
         itemImg.fill(0)
-        
+
         if (i == selectedMenuItem) {
             // 选中项：红色背景，白色文字，添加箭头
             itemImg.fill(menuSelectedFontBgColor)  // 红色背景
@@ -1069,12 +1069,12 @@ function createMenuSprites() {
             itemImg.fill(menuFontBgColor)  // Menu背景色
             itemImg.print(menuItems[i].name, 2, 2, menuFontColor)  // 深色文字，调整位置
         }
-        
+
         let itemSprite = sprites.create(itemImg, MenuKind)
         itemSprite.setPosition(x, y)
         menuSprites.push(itemSprite)
     }
-    
+
     // 创建金钱和库存显示精灵 - 移到左下角
     let moneyImg = image.create(menuBarWidth, menuBarHeight)
     moneyImg.fill(menuBarBgColor)
@@ -1096,7 +1096,7 @@ function createMenuSprites() {
 // 更新菜单显示内容
 function updateMenuDisplay() {
     if (menuState == MenuState.Closed) return
-    
+
     // 重新创建菜单精灵以反映选择变化
     createMenuSprites()
 }
@@ -1104,13 +1104,13 @@ function updateMenuDisplay() {
 // 隐藏菜单
 function hideMenu() {
     if (menuState == MenuState.Closed) return
-    
+
     menuState = MenuState.Closed
-    
+
     // 销毁所有菜单精灵
     sprites.destroyAllSpritesOfKind(MenuKind)
     menuSprites = []
-    
+
     // 清空屏幕文字并重新绘制游戏UI
     screen.fillRect(0, 0, 160, 120, 0)
     updateStatusBars()
@@ -1125,7 +1125,7 @@ function updateMenuSelection() {
 // 执行菜单选择
 function executeMenuItem() {
     if (menuState == MenuState.Closed) return
-    
+
     hideMenu()
     menuItems[selectedMenuItem].action()
 }
@@ -1137,7 +1137,7 @@ function petWork() {
         pet.sayText("我太累了，需要休息...", 2000, false)
         return
     }
-    
+
     // 消耗精力，获得金钱
     energy = Math.max(0, energy - 20)
     let earnedMoney = randint(10, 30)
@@ -1145,18 +1145,18 @@ function petWork() {
     gainXP(12)
     dailyWork++
     weeklyWork++
-    
+
     // 显示工作动画
     animation.stopAnimation(animation.AnimationTypes.All, pet)
     pet.setImage(assets.image`petPlaying`)  // 使用玩耍图片表示工作
-    
+
     updateStatusBars()
-    
+
     game.splash("工作赚取 " + earnedMoney + " 金币！")
     pet.sayText("工作真辛苦，但是赚到钱了！", 2000, false)
-    
+
     music.playTone(440, 300)
-    
+
     // 2秒后恢复正常状态
     setTimeout(() => {
         updatePetState()
@@ -1176,16 +1176,16 @@ function playMiniGame() {
 // 显示石头剪刀布选择菜单
 function showGameMenu() {
     if (gameMenuState == MenuState.Open) return
-    
+
     gameMenuState = MenuState.Open
     // 保留上次选中项，不重置
-    
+
     // 创建游戏菜单背景
     let gameBg = sprites.create(image.create(160, 120), MenuKind)
     gameBg.image.fill(menuBgColor)
     gameBg.setPosition(80, 60)
     gameMenuSprites.push(gameBg)
-    
+
     createGameMenuSprites()
     updateStatusBars()
 }
@@ -1197,23 +1197,23 @@ function createGameMenuSprites() {
         gameMenuSprites[i].destroy()
         gameMenuSprites.splice(i, 1)
     }
-    
+
     // 创建标题 - 使用统一样式
     let titleImg = image.create(80, menuTitleHeight)
     titleImg.print("石头剪刀布", 8, 0, menuTitleColor)
     let titleSprite = sprites.create(titleImg, MenuKind)
     titleSprite.setPosition(menuTitlePositionX, menuTitlePositionY)
     gameMenuSprites.push(titleSprite)
-    
+
     // 游戏选项
     let gameChoices = ["石头", "剪刀", "布"]
-    
+
     for (let i = 0; i < gameChoices.length; i++) {
         let x = 80
         let y = 40 + i * 25
-        
+
         let choiceImg = image.create(60, 18)
-        
+
         // 先绘制对应图标（石头/剪刀/布）
         let icon: Image = null
         if (i == 0) {
@@ -1223,7 +1223,7 @@ function createGameMenuSprites() {
         } else {
             icon = assets.image`paperIcon`
         }
-        
+
         if (i == selectedGameChoice) {
             choiceImg.fill(menuSelectedFontBgColor)
             choiceImg.drawTransparentImage(icon, 2, 1)
@@ -1233,12 +1233,12 @@ function createGameMenuSprites() {
             choiceImg.drawTransparentImage(icon, 2, 1)
             choiceImg.print(gameChoices[i], 22, 2, menuFontColor)
         }
-        
+
         let choiceSprite = sprites.create(choiceImg, MenuKind)
         choiceSprite.setPosition(x, y)
         gameMenuSprites.push(choiceSprite)
     }
-    
+
     // 操作提示 - 使用统一样式
     let hintImg = image.create(menuBarWidth, menuBarHeight)
     hintImg.fill(menuBarBgColor)
@@ -1270,39 +1270,39 @@ function updateLevelMenuDisplay() {
 // 隐藏游戏菜单
 function hideGameMenu() {
     if (gameMenuState == MenuState.Closed) return
-    
+
     gameMenuState = MenuState.Closed
-    
+
     // 销毁游戏菜单精灵
     for (let sprite of gameMenuSprites) {
         sprite.destroy()
     }
     gameMenuSprites = []
-    
+
     updateStatusBars()
 }
 
 // 执行石头剪刀布游戏
 function executeGameChoice() {
     if (gameMenuState == MenuState.Closed) return
-    
+
     let playerChoice = selectedGameChoice + 1  // 1=石头, 2=剪刀, 3=布
     let petChoice = randint(1, 3)
     let choices = ["", "石头", "剪刀", "布"]
-    
+
     hideGameMenu()
-    
+
     if (pet) pet.sayText("我选择" + choices[petChoice] + "！", 2000, false)
-    
+
     let result = ""
     let reward = 0
-    
+
     if (playerChoice == petChoice) {
         result = "平局！"
         reward = 5
     } else if ((playerChoice == 1 && petChoice == 2) ||
-               (playerChoice == 2 && petChoice == 3) ||
-               (playerChoice == 3 && petChoice == 1)) {
+        (playerChoice == 2 && petChoice == 3) ||
+        (playerChoice == 3 && petChoice == 1)) {
         result = "你赢了！"
         reward = 15
         happiness = Math.min(100, happiness + 10)
@@ -1312,11 +1312,11 @@ function executeGameChoice() {
         reward = 3
         happiness = Math.min(100, happiness + 5)
     }
-    
+
     money += reward
     gainXP(reward == 15 ? 10 : (reward == 5 ? 3 : 2))
     updateStatusBars()
-    
+
     game.splash(result + " 获得 " + reward + " 金币！")
     music.playTone(523, 400)
 }
@@ -1599,7 +1599,7 @@ function openShop() {
 // 显示等级与奖励菜单（基础版）
 function showLevelMenu() {
     if (levelMenuState == MenuState.Open) return
-    
+
     levelMenuState = MenuState.Open
 
     const bg = sprites.create(image.create(160, 120), MenuKind)
@@ -1610,7 +1610,7 @@ function showLevelMenu() {
     const titleImg = image.create(90, menuTitleHeight)
     titleImg.print("等级与奖励", 13, 0, menuTitleColor)
     const title = sprites.create(titleImg, MenuKind)
-    title.setPosition(menuTitlePositionX, menuTitlePositionY-6)
+    title.setPosition(menuTitlePositionX, menuTitlePositionY - 6)
     levelMenuSprites.push(title)
 
     // 等级与经验条信息
@@ -1646,11 +1646,11 @@ function showLevelMenu() {
         const sel = (i == levelTab)
         tabsImg.print(tabNames[i], x, 3, sel ? menuSelectedFontColor : menuFontColor)
         if (i == 0 && c0 > 0) {
-            tabsImg.print("*", x+25, 3, 2, image.font8)
+            tabsImg.print("*", x + 25, 3, 2, image.font8)
         } else if (i == 1 && c1 > 0) {
-            tabsImg.print("*", x+25, 3, 2, image.font8)
+            tabsImg.print("*", x + 25, 3, 2, image.font8)
         } else if (i == 2 && c2 > 0) {
-            tabsImg.print("*", x+25, 3, 2, image.font8)
+            tabsImg.print("*", x + 25, 3, 2, image.font8)
         }
     }
     const tabsSprite = sprites.create(tabsImg, MenuKind)
@@ -1694,7 +1694,7 @@ function showLevelMenu() {
         const dnImg = image.create(menuBarWidth, 8)
         dnImg.print("↓", 150, -4, menuFontColor)
         const dnS = sprites.create(dnImg, MenuKind)
-        dnS.setPosition(menuBarPositionX, baseY + (levelVisibleRows * 16)-16)
+        dnS.setPosition(menuBarPositionX, baseY + (levelVisibleRows * 16) - 16)
         levelMenuSprites.push(dnS)
     }
 
@@ -1703,7 +1703,7 @@ function showLevelMenu() {
         const pageImg = image.create(menuBarWidth, 8)
         pageImg.print((levelSelectedIndex + 1) + "/" + tasks.length, menuBarWidth - 30, 0, menuFontColor)
         const pageSprite = sprites.create(pageImg, MenuKind)
-        pageSprite.setPosition(menuBarPositionX+8, 43)
+        pageSprite.setPosition(menuBarPositionX + 8, 43)
         levelMenuSprites.push(pageSprite)
     }
 
@@ -1721,7 +1721,7 @@ function showLevelMenu() {
 // 隐藏等级与奖励菜单
 function hideLevelMenu() {
     if (levelMenuState == MenuState.Closed) return
-    
+
     levelMenuState = MenuState.Closed
     for (let s of levelMenuSprites) {
         s.destroy()
@@ -1733,16 +1733,16 @@ function hideLevelMenu() {
 // 显示购物菜单
 function showShopMenu() {
     if (shopMenuState == MenuState.Open) return
-    
+
     shopMenuState = MenuState.Open
     // 保留上次选中项，不重置
-    
+
     // 创建购物菜单背景
     let shopBg = sprites.create(image.create(160, 120), MenuKind)
     shopBg.image.fill(menuBgColor)
     shopBg.setPosition(80, 60)
     shopMenuSprites.push(shopBg)
-    
+
     createShopMenuSprites()
     updateStatusBars()
 }
@@ -1754,28 +1754,28 @@ function createShopMenuSprites() {
         shopMenuSprites[i].destroy()
         shopMenuSprites.splice(i, 1)
     }
-    
+
     // 创建标题 - 使用统一样式
     let titleImg = image.create(70, menuTitleHeight)
     titleImg.print("宠物商店", 8, 0, menuTitleColor)
     let titleSprite = sprites.create(titleImg, MenuKind)
     titleSprite.setPosition(menuTitlePositionX, menuTitlePositionY)
     shopMenuSprites.push(titleSprite)
-    
+
     // 显示当前金钱 - 使用统一Bar样式
     let moneyImg = image.create(menuBarWidth, menuBarHeight)
     moneyImg.print("当前金钱: " + money, 5, 3, menuFontColor)
     let moneySprite = sprites.create(moneyImg, MenuKind)
     moneySprite.setPosition(menuBarPositionX, 30)
     shopMenuSprites.push(moneySprite)
-    
+
     // 商品选项（前置图标）
     for (let i = 0; i < shopItems.length; i++) {
         let x = 80
         let y = 50 + i * 25
-        
+
         let itemImg = image.create(60, 18)
-        
+
         if (i == selectedShopItem) {
             itemImg.fill(menuSelectedFontBgColor)
             // 绘制类型图标
@@ -1797,19 +1797,19 @@ function createShopMenuSprites() {
             // 文本右移以避开图标
             itemImg.print(shopItems[i].name, 22, 2, menuFontColor)
         }
-        
+
         let itemSprite = sprites.create(itemImg, MenuKind)
         itemSprite.setPosition(x, y)
         shopMenuSprites.push(itemSprite)
     }
-    
+
     // 显示选中商品的价格 - 使用统一Bar样式
     let priceImg = image.create(menuBarWidth, menuBarHeight)
     priceImg.print("价格: " + shopItems[selectedShopItem].price + " 金币", 5, 3, menuFontColor)
     let priceSprite = sprites.create(priceImg, MenuKind)
     priceSprite.setPosition(menuBarPositionX, 95)
     shopMenuSprites.push(priceSprite)
-    
+
     // 操作提示 - 使用统一Bar样式
     let hintImg = image.create(menuBarWidth, menuBarHeight)
     hintImg.fill(menuBarBgColor)
@@ -1828,27 +1828,27 @@ function updateShopMenuDisplay() {
 // 隐藏购物菜单
 function hideShopMenu() {
     if (shopMenuState == MenuState.Closed) return
-    
+
     shopMenuState = MenuState.Closed
-    
+
     // 销毁购物菜单精灵
     for (let sprite of shopMenuSprites) {
         sprite.destroy()
     }
     shopMenuSprites = []
-    
+
     updateStatusBars()
 }
 
 // 执行购买
 function executePurchase() {
     if (shopMenuState == MenuState.Closed) return
-    
+
     let item = shopItems[selectedShopItem]
-    
+
     if (money >= item.price) {
         money -= item.price
-        
+
         if (item.type == "food") {
             foodCount++
             game.showLongText("购买食物成功！\n剩余金钱:" + money, DialogLayout.Bottom)
@@ -1856,7 +1856,7 @@ function executePurchase() {
             medicineCount++
             game.showLongText("购买药物成功！\n剩余金钱:" + money, DialogLayout.Bottom)
         }
-        
+
         music.playTone(659, 300)
         updateStatusBars()
         updateShopMenuDisplay()  // 更新显示金钱
@@ -1947,6 +1947,10 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
         configMenuState == MenuState.Closed &&
         nameMenuState == MenuState.Closed
     ) {
+        // 每次进入时初始化：不保留上次页签与索引
+        levelTab = 0
+        levelSelectedIndex = 0
+        levelScrollOffset = 0
         // 等级与奖励系统入口
         showLevelMenu()
     }
@@ -2057,26 +2061,26 @@ game.onUpdateInterval(4000, () => {
         health = Math.max(0, health - 1)
         cleanliness = Math.max(0, cleanliness - 2)
         energy = Math.max(0, energy - (isNight ? 3 : 2))  // 夜晚精力消耗更快
-        
+
         // 特殊衰减规则
         if (hunger < 20) {
             health = Math.max(0, health - 2)
             happiness = Math.max(0, happiness - 2)
         }
-        
+
         if (cleanliness < 20) {
             health = Math.max(0, health - 1)
         }
-        
+
         if (energy < 20) {
             happiness = Math.max(0, happiness - 3)
             health = Math.max(0, health - 1)
         }
-        
+
         if (pet) pet.sayText(getRandomDialogue(), 1000, false)
         updateStatusBars()
         updatePetState()
-        
+
         // 检查游戏结束条件
         if (health <= 0) {
             gameOver()
@@ -2165,9 +2169,9 @@ function gameOver() {
     settings.writeString(CONFIG_DONE_KEY, "0")
     resetDefaults()
     saveProgress()
-    
+
     game.showLongText("你的宠物因为缺乏照顾而离开了...\n记得要定期喂食、玩耍、治疗和清洁哦！", DialogLayout.Center)
-    
+
     game.over(false)
 }
 
@@ -2321,7 +2325,7 @@ function finishConfigAndStart() {
     effects.confetti.startScreenEffect(500)
     // 对话框关闭后，主动刷新一次文字精灵，避免初次不显示
     updateStatusBars()
-   
+
 }
 
 // 启动游戏
