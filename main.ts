@@ -1603,7 +1603,7 @@ function showLevelMenu() {
     levelMenuSprites.push(bg)
 
     const titleImg = image.create(90, menuTitleHeight)
-    titleImg.print("等级与奖励", 8, 0, menuTitleColor)
+    titleImg.print("等级与奖励", 13, 0, menuTitleColor)
     const title = sprites.create(titleImg, MenuKind)
     title.setPosition(menuTitlePositionX, menuTitlePositionY-6)
     levelMenuSprites.push(title)
@@ -1671,8 +1671,8 @@ function showLevelMenu() {
         else status = t.progress + "/" + t.target
         const sel = ((start + i) == levelSelectedIndex)
         if (sel) itemImg.fill(menuSelectedFontBgColor)
-        itemImg.print(t.title, 5, 3, sel ? menuSelectedFontColor : menuFontColor)
-        itemImg.print(status, 120, 3, sel ? menuSelectedFontColor : menuFontColor)
+        itemImg.print(t.title, 5, 1, sel ? menuSelectedFontColor : menuFontColor)
+        itemImg.print(status, 120, 1, sel ? menuSelectedFontColor : menuFontColor)
         const s = sprites.create(itemImg, MenuKind)
         s.setPosition(menuBarPositionX, baseY + i * 16)
         levelMenuSprites.push(s)
@@ -1696,7 +1696,7 @@ function showLevelMenu() {
     // 页码指示（当前选中序号/总数）
     {
         const pageImg = image.create(menuBarWidth, 8)
-        pageImg.print((levelSelectedIndex + 1) + "/" + tasks.length, menuBarWidth - 35, 0, menuFontColor)
+        pageImg.print((levelSelectedIndex + 1) + "/" + tasks.length, menuBarWidth - 30, 0, menuFontColor)
         const pageSprite = sprites.create(pageImg, MenuKind)
         pageSprite.setPosition(menuBarPositionX+8, 43)
         levelMenuSprites.push(pageSprite)
