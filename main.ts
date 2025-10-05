@@ -35,7 +35,7 @@ enum Difficulty {
     Hard     // 4000ms 衰减
 }
 
-const VERSION = "v1.0.1"
+const VERSION = "v1.0.2"
 
 // 常量，每多少秒一小时
 const SECONDS_PER_HOUR = 30
