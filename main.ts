@@ -250,9 +250,9 @@ let menuSelectedFontBgColor = 2
 let menuTitleColor = 15
 let menuBarBgColor = 6
 let menuBarFontColor = 5
-let menuTitleHeight = 10
+let menuTitleHeight = 14
 let menuTitlePositionX = 80
-let menuTitlePositionY = 10
+let menuTitlePositionY = 14
 let menuBarWidth = 160
 let menuBarHeight = 18
 let menuBarPositionX = 80
@@ -533,8 +533,8 @@ function createUI() {
     
     // 创建文字精灵：顶部与底部（始终重建，避免初始化阶段不显示）
     if (topTextSprite) topTextSprite.destroy()
-    topTextSprite = sprites.create(image.create(160, 15), UIKind)
-    topTextSprite.setPosition(80, 7)
+    topTextSprite = sprites.create(image.create(160, 25), UIKind)
+    topTextSprite.setPosition(80, 12)
     topTextSprite.z = 100
 
     if (bottomTextSprite) bottomTextSprite.destroy()
@@ -582,17 +582,15 @@ function updateStatusBars() {
     
     // 显示时间和昼夜状态、金钱（文字精灵顶部条）
     let timeStr = currentHour + ":00"
-    let dayNightStr = isNight ? "夜晚" : "白天"
     if (topTextSprite) {
-        topTextSprite.image.print(timeStr + " " + dayNightStr, 5, 12, isNight ? 9 : 5)
-        topTextSprite.image.print("金钱: " + money, 90, 12, 5)
+        topTextSprite.image.print(timeStr, 5, 12, isNight ? 5 : 8)
         // 可领取任务徽标（★n）
         const _cDaily = getDailyTasks().filter(t => t.canClaim).length
         const _cWeekly = getWeeklyTasks().filter(t => t.canClaim).length
         const _cAch = getAchievementTasks().filter(t => t.canClaim).length
         const _cAll = _cDaily + _cWeekly + _cAch
         if (_cAll > 0) {
-            topTextSprite.image.print("★" + _cAll, 140, 2, 2)
+            topTextSprite.image.print("↑" + _cAll, 140, 12, 2,image.font8)
         }
     }
     
@@ -1396,12 +1394,12 @@ function getDailyTasks(): Task[] {
 function getWeeklyTasks(): Task[] {
     return [
         {
-            id: "w_work5", title: "本周打工5次", target: 5,
+            id: "w_work5", title: "打工5次", target: 5,
             progress: weeklyWork, rewardXP: 20, rewardMoney: 120,
             claimed: claimed_w_work5, canClaim: weeklyWork >= 5 && !claimed_w_work5
         },
         {
-            id: "w_rps3", title: "本周猜拳胜利3次", target: 3,
+            id: "w_rps3", title: "猜拳胜利3次", target: 3,
             progress: weeklyRpsWin, rewardXP: 30, rewardMoney: 80,
             claimed: claimed_w_rps3, canClaim: weeklyRpsWin >= 3 && !claimed_w_rps3
         }
@@ -1541,7 +1539,7 @@ function showLevelMenu() {
     infoImg.fillRect(5, menuBarHeight - 4, barW, 2, 1)
     infoImg.fillRect(5, menuBarHeight - 4, filled, 2, 7)
     const infoSprite = sprites.create(infoImg, MenuKind)
-    infoSprite.setPosition(menuBarPositionX, 21)
+    infoSprite.setPosition(menuBarPositionX, 25)
     levelMenuSprites.push(infoSprite)
 
     // 页签（每日/每周/成就）+ 徽标（可领数量）
@@ -1554,17 +1552,24 @@ function showLevelMenu() {
     const c1 = weekly.filter(t => t.canClaim).length
     const c2 = ach.filter(t => t.canClaim).length
     const tabNames = [
-        c0 > 0 ? "每日(" + c0 + ")" : "每日",
-        c1 > 0 ? "每周(" + c1 + ")" : "每周",
-        c2 > 0 ? "成就(" + c2 + ")" : "成就"
+        "每日",
+        "每周",
+        "成就"
     ]
     for (let i = 0; i < 3; i++) {
         const x = 5 + i * 45
         const sel = (i == levelTab)
         tabsImg.print(tabNames[i], x, 3, sel ? menuSelectedFontColor : menuFontColor)
+        if (i == 0 && c0 > 0) {
+            tabsImg.print("*", x+24, 3, 2, image.font8)
+        } else if (i == 1 && c1 > 0) {
+            tabsImg.print("*", x+24, 3, 2, image.font8)
+        } else if (i == 1 && c2 > 0) {
+            tabsImg.print("*", x+24, 3, 2, image.font8)
+        }
     }
     const tabsSprite = sprites.create(tabsImg, MenuKind)
-    tabsSprite.setPosition(menuBarPositionX, 39)
+    tabsSprite.setPosition(menuBarPositionX, 43)
     levelMenuSprites.push(tabsSprite)
 
     // 任务列表（固定光标在中间行的滚动视窗）
@@ -1783,6 +1788,16 @@ sprites.onOverlap(SpriteKind.Player, UIKind, (sprite, otherSprite) => {
 
 // 新的控制器输入处理 - 菜单系统
 controller.menu.onEvent(ControllerButtonEvent.Pressed, () => {
+    // 若其它菜单已打开，禁止打开/切换宠物菜单，避免遮挡与冲突
+    if (
+        levelMenuState == MenuState.Open ||
+        gameMenuState == MenuState.Open ||
+        shopMenuState == MenuState.Open ||
+        configMenuState == MenuState.Open ||
+        nameMenuState == MenuState.Open
+    ) {
+        return
+    }
     if (menuState == MenuState.Closed) {
         showMenu()
     } else {
