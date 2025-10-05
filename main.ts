@@ -338,6 +338,8 @@ function updateDayNightCycle() {
  */
 function debugResetGame() {
     if (!DEBUG_MODE) return
+    // 停止游戏循环，避免延时回调访问已销毁对象
+    gameRunning = false
 
     // 清除存档标记与配置完成标记，写入默认初始值并保存
     settings.writeString(SAVE_FLAG_KEY, "0")
@@ -450,6 +452,10 @@ function createUI() {
 // 更新状态条
 function updateStatusBars() {
     if (!hungerBar || !happinessBar || !healthBar || !cleanlinessBar || !energyBar) return
+    // 菜单遮挡控制：当任一菜单打开时隐藏文字精灵，避免遮挡
+    const anyMenuOpen = (menuState == MenuState.Open) || (gameMenuState == MenuState.Open) || (shopMenuState == MenuState.Open) || (configMenuState == MenuState.Open) || (nameMenuState == MenuState.Open)
+    if (topTextSprite) topTextSprite.setFlag(SpriteFlag.Invisible, anyMenuOpen)
+    if (bottomTextSprite) bottomTextSprite.setFlag(SpriteFlag.Invisible, anyMenuOpen)
     // 清空文字精灵内容
     if (topTextSprite) topTextSprite.image.fill(0)
     if (bottomTextSprite) bottomTextSprite.image.fill(0)
@@ -497,7 +503,7 @@ function updateStatusBars() {
     energyBar.image.fillRect(0, 0, Math.floor(energy * 28 / 100), 4, 8)
     
     // 底部操作提示（文字精灵底部条）
-    if (menuState == MenuState.Closed && bottomTextSprite) {
+    if (menuState == MenuState.Closed && gameMenuState == MenuState.Closed && shopMenuState == MenuState.Closed && configMenuState == MenuState.Closed && nameMenuState == MenuState.Closed && bottomTextSprite) {
         bottomTextSprite.image.print("菜单键", 120, 2, 1)
     }
 }
@@ -554,6 +560,7 @@ function petJump() {
     
     // 使用setTimeout替代timer.after
     setTimeout(() => {
+        if (!gameRunning || !pet) return
         scene.cameraShake(2, 200)
         pet.setPosition(pet.x, originalY)
         pet.vy = 0
@@ -572,6 +579,7 @@ function petMove() {
     
     // 使用setTimeout替代timer.after
     setTimeout(() => {
+        if (!gameRunning || !pet) return
         pet.vx = 0
         // 如果移动太远，拉回中心区域
         if (pet.x < 40 || pet.x > 120) {
@@ -593,6 +601,7 @@ function petDance() {
         
         // 使用setTimeout替代timer.after
         setTimeout(() => {
+            if (!gameRunning || !pet) return
             updatePetState()
         }, 3200)
     }
@@ -819,6 +828,7 @@ function showMenu() {
     menuSprites.push(menuBg)
     
     createMenuSprites()
+    updateStatusBars()
 }
 
 
@@ -971,6 +981,7 @@ function showGameMenu() {
     gameMenuSprites.push(gameBg)
     
     createGameMenuSprites()
+    updateStatusBars()
 }
 
 // 创建石头剪刀布菜单精灵
@@ -1119,6 +1130,7 @@ function showShopMenu() {
     shopMenuSprites.push(shopBg)
     
     createShopMenuSprites()
+    updateStatusBars()
 }
 
 // 创建购物菜单精灵
@@ -1572,6 +1584,7 @@ function showDifficultyMenu() {
     hintImg.print("上下选择 A确认", 3, 3, menuBarFontColor)
     const hint = sprites.create(hintImg, MenuKind)
     hint.setPosition(menuBarPositionX, menuBarPositionY)
+    updateStatusBars()
 }
 
 function proceedToNameMenu() {
@@ -1607,6 +1620,7 @@ function showNameMenu() {
     hintImg.print("A确认 B随机", 3, 3, menuBarFontColor)
     const hint = sprites.create(hintImg, MenuKind)
     hint.setPosition(menuBarPositionX, menuBarPositionY)
+    updateStatusBars()
 }
 
 function finishConfigAndStart() {
