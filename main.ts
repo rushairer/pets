@@ -53,6 +53,7 @@ let medicineCount = 2  // 新增：药物数量
 let lastUpdateTime = 0
 let gameRunning = true
 // 睡眠模式标志：通过菜单进入睡觉后置为 true，按 B 唤醒或精力满则结束
+const SLEEP_MAX_MS = 30000
 let sleeping = false
 
 // 新增：难度与昵称配置
@@ -559,6 +560,14 @@ function updateStatusBars() {
     if (topTextSprite) {
         topTextSprite.image.print(timeStr + " " + dayNightStr, 5, 12, isNight ? 9 : 5)
         topTextSprite.image.print("金钱: " + money, 90, 12, 5)
+        // 可领取任务徽标（★n）
+        const _cDaily = getDailyTasks().filter(t => t.canClaim).length
+        const _cWeekly = getWeeklyTasks().filter(t => t.canClaim).length
+        const _cAch = getAchievementTasks().filter(t => t.canClaim).length
+        const _cAll = _cDaily + _cWeekly + _cAch
+        if (_cAll > 0) {
+            topTextSprite.image.print("★" + _cAll, 140, 2, 2)
+        }
     }
     
     // 饥饿度条 (红色) — 新宽度22
@@ -901,15 +910,23 @@ function petSleep() {
         if (health < 100) health = Math.min(100, health + 1)
         updateStatusBars()
         if (energy >= 100) {
+            energy = 100
+            if (health < 100) health = Math.min(100, health + 3)
+            updateStatusBars()
+            if (pet) pet.sayText("睡饱了，精神满满！", 1500, false)
             stopSleepMode()
         } else {
             setTimeout(tick, 1000)
-    // 最长睡眠时长：30秒，超时自动醒来
+    // 最长睡眠时长：30秒，超时自动醒来（自动完成时直接加满精力）
     setTimeout(() => {
         if (sleeping) {
+            energy = 100
+            if (health < 100) health = Math.min(100, health + 3)
+            updateStatusBars()
+            if (pet) pet.sayText("睡饱了，精神满满！", 1500, false)
             stopSleepMode()
         }
-    }, 30000)
+    }, SLEEP_MAX_MS)
         }
     }
     setTimeout(tick, 1000)
@@ -1278,6 +1295,9 @@ let claimed_a_money500 = false
 // 等级菜单交互状态
 let levelTab = 0 // 0=每日 1=每周 2=成就
 let levelSelectedIndex = 0
+let levelScrollOffset = 0
+const levelVisibleRows = 5
+const levelCursorRow = 2
 
 function resetDailyCounters() {
     dailyFeed = 0
@@ -1379,9 +1399,20 @@ function getAchievementTasks(): Task[] {
 }
 
 function getCurrentTasks(): Task[] {
-    if (levelTab == 0) return getDailyTasks()
-    if (levelTab == 1) return getWeeklyTasks()
-    return getAchievementTasks()
+    let list = levelTab == 0 ? getDailyTasks() : (levelTab == 1 ? getWeeklyTasks() : getAchievementTasks())
+    // 稳定排序：可领 > 未完成 > 已领；其次按完成度(进度/目标)降序
+    list.sort((a, b) => {
+        const ca = a.canClaim ? 1 : 0
+        const cb = b.canClaim ? 1 : 0
+        if (ca != cb) return cb - ca
+        const cla = a.claimed ? 1 : 0
+        const clb = b.claimed ? 1 : 0
+        if (cla != clb) return cla - clb // 未领在前，已领在后
+        const ra = a.target > 0 ? a.progress / a.target : 0
+        const rb = b.target > 0 ? b.progress / b.target : 0
+        return rb - ra
+    })
+    return list
 }
 
 function setClaimedById(id: string) {
@@ -1483,10 +1514,20 @@ function showLevelMenu() {
     infoSprite.setPosition(menuBarPositionX, 35)
     levelMenuSprites.push(infoSprite)
 
-    // 页签（每日/每周/成就）
+    // 页签（每日/每周/成就）+ 徽标（可领数量）
     const tabsImg = image.create(menuBarWidth, menuBarHeight)
     tabsImg.fill(menuBarBgColor)
-    const tabNames = ["每日", "每周", "成就"]
+    const daily = getDailyTasks()
+    const weekly = getWeeklyTasks()
+    const ach = getAchievementTasks()
+    const c0 = daily.filter(t => t.canClaim).length
+    const c1 = weekly.filter(t => t.canClaim).length
+    const c2 = ach.filter(t => t.canClaim).length
+    const tabNames = [
+        c0 > 0 ? "每日(" + c0 + ")" : "每日",
+        c1 > 0 ? "每周(" + c1 + ")" : "每周",
+        c2 > 0 ? "成就(" + c2 + ")" : "成就"
+    ]
     for (let i = 0; i < 3; i++) {
         const x = 5 + i * 45
         const sel = (i == levelTab)
@@ -1496,23 +1537,52 @@ function showLevelMenu() {
     tabsSprite.setPosition(menuBarPositionX, 55)
     levelMenuSprites.push(tabsSprite)
 
-    // 任务列表
+    // 任务列表（固定光标在中间行的滚动视窗）
     const tasks = getCurrentTasks()
-    for (let i = 0; i < tasks.length; i++) {
+    // 边界保护
+    if (levelSelectedIndex < 0) levelSelectedIndex = 0
+    if (levelSelectedIndex >= tasks.length) levelSelectedIndex = Math.max(0, tasks.length - 1)
+    const maxStart = Math.max(0, tasks.length - levelVisibleRows)
+    const start = Math.max(0, Math.min(maxStart, levelSelectedIndex - levelCursorRow))
+    const end = Math.min(tasks.length, start + levelVisibleRows)
+    for (let i = 0; i < end - start; i++) {
         const itemImg = image.create(menuBarWidth, 14)
-        const t = tasks[i]
+        const t = tasks[start + i]
         let status = ""
         if (t.claimed) status = "已领"
         else if (t.canClaim) status = "可领"
         else status = t.progress + "/" + t.target
-        const sel = (i == levelSelectedIndex)
+        const sel = ((start + i) == levelSelectedIndex)
         if (sel) itemImg.fill(menuSelectedFontBgColor)
         itemImg.print(t.title, 5, 3, sel ? menuSelectedFontColor : menuFontColor)
         itemImg.print(status, 110, 3, sel ? menuSelectedFontColor : menuFontColor)
         const s = sprites.create(itemImg, MenuKind)
         s.setPosition(menuBarPositionX, 75 + i * 14)
         levelMenuSprites.push(s)
-        if (i >= 4) break // 最多显示5项，避免超出
+    }
+    // 上/下滚动箭头提示
+    if (start > 0) {
+        const upImg = image.create(menuBarWidth, 8)
+        upImg.print("↑", 150, 0, menuFontColor)
+        const upS = sprites.create(upImg, MenuKind)
+        upS.setPosition(menuBarPositionX, 69)
+        levelMenuSprites.push(upS)
+    }
+    if (end < tasks.length) {
+        const dnImg = image.create(menuBarWidth, 8)
+        dnImg.print("↓", 150, 0, menuFontColor)
+        const dnS = sprites.create(dnImg, MenuKind)
+        dnS.setPosition(menuBarPositionX, 75 + (levelVisibleRows * 14))
+        levelMenuSprites.push(dnS)
+    }
+
+    // 页码指示（当前选中序号/总数）
+    {
+        const pageImg = image.create(menuBarWidth, 8)
+        pageImg.print((levelSelectedIndex + 1) + "/" + tasks.length, menuBarWidth - 35, 0, menuFontColor)
+        const pageSprite = sprites.create(pageImg, MenuKind)
+        pageSprite.setPosition(menuBarPositionX, 63)
+        levelMenuSprites.push(pageSprite)
     }
 
     // 提示
@@ -1692,7 +1762,8 @@ controller.left.onEvent(ControllerButtonEvent.Pressed, () => {
     if (levelMenuState == MenuState.Open) {
         if (levelTab > 0) {
             levelTab--
-            if (levelSelectedIndex >= getCurrentTasks().length) levelSelectedIndex = 0
+            levelSelectedIndex = 0
+            levelScrollOffset = 0
             updateLevelMenuDisplay()
         }
     } else if (menuState == MenuState.Open) {
@@ -1707,7 +1778,8 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, () => {
     if (levelMenuState == MenuState.Open) {
         if (levelTab < 2) {
             levelTab++
-            if (levelSelectedIndex >= getCurrentTasks().length) levelSelectedIndex = 0
+            levelSelectedIndex = 0
+            levelScrollOffset = 0
             updateLevelMenuDisplay()
         }
     } else if (menuState == MenuState.Open) {
