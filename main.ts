@@ -34,6 +34,8 @@ let health = 50
 let cleanliness = 50
 let energy = 50  // 新增：精力值
 let money = 100  // 新增：金钱系统
+let foodCount = 3  // 新增：食物数量
+let medicineCount = 2  // 新增：药物数量
 let lastUpdateTime = 0
 let gameRunning = true
 
@@ -51,6 +53,13 @@ let menuSelectedFontBgColor = 2
 let menuTitleColor = 15
 let menuBarBgColor = 6
 let menuBarFontColor = 5
+let menuTitleHeight = 14
+let menuTitlePositionX = 80
+let menuTitlePositionY = 14
+let menuBarWidth = 160
+let menuBarHeight = 18
+let menuBarPositionX = 80
+let menuBarPositionY = 111
 
 
 // 菜单系统变量
@@ -485,7 +494,16 @@ function getRandomDialogue(): string {
 
 // 喂食功能
 function feedPet() {
+    if (foodCount <= 0) {
+        game.splash("没有食物了！")
+        pet.sayText("主人，我饿了但是没有食物...", 2000, false)
+        return
+    }
+    
     if (hunger < 100) {
+        // 消耗食物
+        foodCount--
+        
         // 显示吃东西状态
         animation.stopAnimation(animation.AnimationTypes.All, pet)
         pet.setImage(assets.image`petEating`)
@@ -495,7 +513,7 @@ function feedPet() {
         updateStatusBars()
         
         // 显示反馈
-        game.splash("+20 饥饿度")
+        game.splash("+20 饥饿度 (剩余食物:" + foodCount + ")")
         pet.sayText("好香啊！谢谢主人！", 1500, false)
         
         music.playTone(262, 200)
@@ -504,6 +522,8 @@ function feedPet() {
         setTimeout(() => {
             updatePetState()
         }, 2000)
+    } else {
+        game.splash("宠物不饿！")
     }
 }
 
@@ -528,15 +548,27 @@ function playWithPet() {
 
 // 治疗功能
 function healPet() {
+    if (medicineCount <= 0) {
+        game.splash("没有药物了！")
+        pet.sayText("主人，我生病了但是没有药物...", 2000, false)
+        return
+    }
+    
     if (health < 100) {
+        // 消耗药物
+        medicineCount--
+        
         health = Math.min(100, health + 30)
         updateStatusBars()
         updatePetState()
         
         // 显示反馈
-        game.splash("+30 健康度")
+        game.splash("+30 健康度 (剩余药物:" + medicineCount + ")")
+        pet.sayText("药物真有效！感觉好多了！", 1500, false)
         
         music.playTone(392, 200)
+    } else {
+        game.splash("宠物很健康！")
     }
 }
 
@@ -619,10 +651,10 @@ function createMenuSprites() {
     }
     
     // 创建标题精灵 - 向上移动
-    let titleImg = image.create(60, 15)
-    titleImg.print("宠物菜单", 9, 0, menuTitleColor)  // 白色文字，增加垂直间距
+    let titleImg = image.create(60, menuTitleHeight)
+    titleImg.print("宠物菜单", 6, 0, menuTitleColor)  // 白色文字，增加垂直间距
     let titleSprite = sprites.create(titleImg, MenuKind)
-    titleSprite.setPosition(80, 14)
+    titleSprite.setPosition(menuTitlePositionX, menuTitlePositionY)
     menuSprites.push(titleSprite)
     
     // 创建菜单项精灵 - 3x3网格，再增大行高
@@ -650,12 +682,12 @@ function createMenuSprites() {
         menuSprites.push(itemSprite)
     }
     
-    // 创建金钱显示精灵 - 移到左下角
-    let moneyImg = image.create(160, 18)
+    // 创建金钱和库存显示精灵 - 移到左下角
+    let moneyImg = image.create(menuBarWidth, menuBarHeight)
     moneyImg.fill(menuBarBgColor)
-    moneyImg.print("钱:" + money, 3, 3, menuBarFontColor)  // 黄色文字，调整位置
+    moneyImg.print("钱:" + money + " 食物:" + foodCount + " 药物:" + medicineCount, 3, 3, menuBarFontColor)  // 黄色文字，调整位置
     let moneySprite = sprites.create(moneyImg, MenuKind)
-    moneySprite.setPosition(80, 111)  // 移到左下角
+    moneySprite.setPosition(menuBarPositionX, menuBarPositionY)  // 移到左下角
     menuSprites.push(moneySprite)
 }
 
@@ -726,18 +758,108 @@ function petWork() {
     }, 2000)
 }
 
+// 石头剪刀布游戏变量
+let gameMenuState = MenuState.Closed
+let selectedGameChoice = 0
+let gameMenuSprites: Sprite[] = []
+
 // 新增功能：互动小游戏
 function playMiniGame() {
-    game.splash("石头剪刀布！")
+    showGameMenu()
+}
+
+// 显示石头剪刀布选择菜单
+function showGameMenu() {
+    if (gameMenuState == MenuState.Open) return
     
-    let playerChoice = game.askForNumber("选择：1=石头 2=剪刀 3=布", 1)
-    if (playerChoice < 1 || playerChoice > 3) {
-        game.splash("无效选择！")
-        return
+    gameMenuState = MenuState.Open
+    selectedGameChoice = 0
+    
+    // 创建游戏菜单背景
+    let gameBg = sprites.create(image.create(160, 120), MenuKind)
+    gameBg.image.fill(menuBgColor)
+    gameBg.setPosition(80, 60)
+    gameMenuSprites.push(gameBg)
+    
+    createGameMenuSprites()
+}
+
+// 创建石头剪刀布菜单精灵
+function createGameMenuSprites() {
+    // 清除旧的菜单精灵（保留背景）
+    for (let i = gameMenuSprites.length - 1; i >= 1; i--) {
+        gameMenuSprites[i].destroy()
+        gameMenuSprites.splice(i, 1)
     }
     
+    // 创建标题
+    let titleImg = image.create(80, 18)
+    titleImg.print("石头剪刀布", 8, 4, menuTitleColor)
+    let titleSprite = sprites.create(titleImg, MenuKind)
+    titleSprite.setPosition(80, 25)
+    gameMenuSprites.push(titleSprite)
+    
+    // 游戏选项
+    let gameChoices = ["石头", "剪刀", "布"]
+    
+    for (let i = 0; i < gameChoices.length; i++) {
+        let x = 80
+        let y = 50 + i * 25
+        
+        let choiceImg = image.create(50, 18)
+        
+        if (i == selectedGameChoice) {
+            choiceImg.fill(menuSelectedFontBgColor)
+            choiceImg.print(gameChoices[i], 12, 4, menuSelectedFontColor)
+        } else {
+            choiceImg.fill(menuFontBgColor)
+            choiceImg.print(gameChoices[i], 12, 4, menuFontColor)
+        }
+        
+        let choiceSprite = sprites.create(choiceImg, MenuKind)
+        choiceSprite.setPosition(x, y)
+        gameMenuSprites.push(choiceSprite)
+    }
+    
+    // 操作提示
+    let hintImg = image.create(120, 15)
+    hintImg.fill(menuBarBgColor)
+    hintImg.print("上下选择 A确认 B返回", 5, 2, menuBarFontColor)
+    let hintSprite = sprites.create(hintImg, MenuKind)
+    hintSprite.setPosition(80, 105)
+    gameMenuSprites.push(hintSprite)
+}
+
+// 更新游戏菜单显示
+function updateGameMenuDisplay() {
+    if (gameMenuState == MenuState.Closed) return
+    createGameMenuSprites()
+}
+
+// 隐藏游戏菜单
+function hideGameMenu() {
+    if (gameMenuState == MenuState.Closed) return
+    
+    gameMenuState = MenuState.Closed
+    
+    // 销毁游戏菜单精灵
+    for (let sprite of gameMenuSprites) {
+        sprite.destroy()
+    }
+    gameMenuSprites = []
+    
+    updateStatusBars()
+}
+
+// 执行石头剪刀布游戏
+function executeGameChoice() {
+    if (gameMenuState == MenuState.Closed) return
+    
+    let playerChoice = selectedGameChoice + 1  // 1=石头, 2=剪刀, 3=布
     let petChoice = randint(1, 3)
     let choices = ["", "石头", "剪刀", "布"]
+    
+    hideGameMenu()
     
     pet.sayText("我选择" + choices[petChoice] + "！", 2000, false)
     
@@ -766,33 +888,142 @@ function playMiniGame() {
     music.playTone(523, 400)
 }
 
+// 购物菜单变量
+let shopMenuState = MenuState.Closed
+let selectedShopItem = 0
+let shopMenuSprites: Sprite[] = []
+
+// 商店商品数据
+let shopItems = [
+    { name: "食物", price: 20, type: "food" },
+    { name: "药物", price: 30, type: "medicine" }
+]
+
 // 新增功能：购物系统
 function openShop() {
-    let shopItems = [
-        { name: "高级食物", price: 50, effect: () => { hunger = Math.min(100, hunger + 40); game.splash("饥饿度大幅提升！") } },
-        { name: "玩具", price: 30, effect: () => { happiness = Math.min(100, happiness + 30); game.splash("快乐度大幅提升！") } },
-        { name: "维生素", price: 40, effect: () => { health = Math.min(100, health + 50); game.splash("健康度大幅提升！") } },
-        { name: "能量饮料", price: 35, effect: () => { energy = Math.min(100, energy + 60); game.splash("精力大幅提升！") } }
-    ]
+    showShopMenu()
+}
+
+// 显示购物菜单
+function showShopMenu() {
+    if (shopMenuState == MenuState.Open) return
     
-    let shopText = "欢迎来到宠物商店！\n当前金钱: " + money + "\n\n"
-    for (let i = 0; i < shopItems.length; i++) {
-        shopText += (i + 1) + ". " + shopItems[i].name + " - " + shopItems[i].price + "金币\n"
+    shopMenuState = MenuState.Open
+    selectedShopItem = 0
+    
+    // 创建购物菜单背景
+    let shopBg = sprites.create(image.create(160, 120), MenuKind)
+    shopBg.image.fill(menuBgColor)
+    shopBg.setPosition(80, 60)
+    shopMenuSprites.push(shopBg)
+    
+    createShopMenuSprites()
+}
+
+// 创建购物菜单精灵
+function createShopMenuSprites() {
+    // 清除旧的菜单精灵（保留背景）
+    for (let i = shopMenuSprites.length - 1; i >= 1; i--) {
+        shopMenuSprites[i].destroy()
+        shopMenuSprites.splice(i, 1)
     }
-    shopText += "\n选择要购买的物品 (1-" + shopItems.length + ")，0退出"
     
-    let choice = game.askForNumber(shopText, 0)
+    // 创建标题
+    let titleImg = image.create(80, 18)
+    titleImg.print("宠物商店", 12, 4, menuTitleColor)
+    let titleSprite = sprites.create(titleImg, MenuKind)
+    titleSprite.setPosition(80, 20)
+    shopMenuSprites.push(titleSprite)
     
-    if (choice >= 1 && choice <= shopItems.length) {
-        let item = shopItems[choice - 1]
-        if (money >= item.price) {
-            money -= item.price
-            item.effect()
-            updateStatusBars()
-            music.playTone(659, 300)
+    // 显示当前金钱
+    let moneyImg = image.create(100, 15)
+    moneyImg.fill(menuBarBgColor)
+    moneyImg.print("当前金钱: " + money, 5, 2, menuBarFontColor)
+    let moneySprite = sprites.create(moneyImg, MenuKind)
+    moneySprite.setPosition(80, 35)
+    shopMenuSprites.push(moneySprite)
+    
+    // 商品选项
+    for (let i = 0; i < shopItems.length; i++) {
+        let x = 80
+        let y = 55 + i * 25
+        
+        let itemImg = image.create(60, 18)
+        
+        if (i == selectedShopItem) {
+            itemImg.fill(menuSelectedFontBgColor)
+            itemImg.print(shopItems[i].name, 15, 4, menuSelectedFontColor)
         } else {
-            game.splash("金钱不足！")
+            itemImg.fill(menuFontBgColor)
+            itemImg.print(shopItems[i].name, 15, 4, menuFontColor)
         }
+        
+        let itemSprite = sprites.create(itemImg, MenuKind)
+        itemSprite.setPosition(x, y)
+        shopMenuSprites.push(itemSprite)
+    }
+    
+    // 显示选中商品的价格
+    let priceImg = image.create(100, 15)
+    priceImg.fill(menuBarBgColor)
+    priceImg.print("价格: " + shopItems[selectedShopItem].price + " 金币", 5, 2, menuBarFontColor)
+    let priceSprite = sprites.create(priceImg, MenuKind)
+    priceSprite.setPosition(80, 90)
+    shopMenuSprites.push(priceSprite)
+    
+    // 操作提示
+    let hintImg = image.create(120, 15)
+    hintImg.fill(menuBarBgColor)
+    hintImg.print("上下选择 A购买 B返回", 5, 2, menuBarFontColor)
+    let hintSprite = sprites.create(hintImg, MenuKind)
+    hintSprite.setPosition(80, 105)
+    shopMenuSprites.push(hintSprite)
+}
+
+// 更新购物菜单显示
+function updateShopMenuDisplay() {
+    if (shopMenuState == MenuState.Closed) return
+    createShopMenuSprites()
+}
+
+// 隐藏购物菜单
+function hideShopMenu() {
+    if (shopMenuState == MenuState.Closed) return
+    
+    shopMenuState = MenuState.Closed
+    
+    // 销毁购物菜单精灵
+    for (let sprite of shopMenuSprites) {
+        sprite.destroy()
+    }
+    shopMenuSprites = []
+    
+    updateStatusBars()
+}
+
+// 执行购买
+function executePurchase() {
+    if (shopMenuState == MenuState.Closed) return
+    
+    let item = shopItems[selectedShopItem]
+    
+    if (money >= item.price) {
+        money -= item.price
+        
+        if (item.type == "food") {
+            foodCount++
+            game.splash("购买食物成功！剩余金钱:" + money)
+        } else if (item.type == "medicine") {
+            medicineCount++
+            game.splash("购买药物成功！剩余金钱:" + money)
+        }
+        
+        music.playTone(659, 300)
+        updateStatusBars()
+        updateShopMenuDisplay()  // 更新显示金钱
+    } else {
+        game.splash("金钱不足！")
+        music.playTone(175, 500)
     }
 }
 
@@ -834,6 +1065,16 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
             selectedMenuItem -= 3
             updateMenuSelection()
         }
+    } else if (gameMenuState == MenuState.Open) {
+        if (selectedGameChoice > 0) {
+            selectedGameChoice--
+            updateGameMenuDisplay()
+        }
+    } else if (shopMenuState == MenuState.Open) {
+        if (selectedShopItem > 0) {
+            selectedShopItem--
+            updateShopMenuDisplay()
+        }
     }
 })
 
@@ -843,18 +1084,36 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
             selectedMenuItem += 3
             updateMenuSelection()
         }
+    } else if (gameMenuState == MenuState.Open) {
+        if (selectedGameChoice < 2) {
+            selectedGameChoice++
+            updateGameMenuDisplay()
+        }
+    } else if (shopMenuState == MenuState.Open) {
+        if (selectedShopItem < shopItems.length - 1) {
+            selectedShopItem++
+            updateShopMenuDisplay()
+        }
     }
 })
 
 controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
     if (menuState == MenuState.Open) {
         executeMenuItem()
+    } else if (gameMenuState == MenuState.Open) {
+        executeGameChoice()
+    } else if (shopMenuState == MenuState.Open) {
+        executePurchase()
     }
 })
 
 controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
     if (menuState == MenuState.Open) {
         hideMenu()
+    } else if (gameMenuState == MenuState.Open) {
+        hideGameMenu()
+    } else if (shopMenuState == MenuState.Open) {
+        hideShopMenu()
     }
 })
 
