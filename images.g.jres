@@ -85,7 +85,7 @@
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petIdleAnimationFrame1"
+        "displayName": "petIdleAnimationFrame0"
     },
     "myImages.petIdleAnimationFrame1": {
         "id": "myImages.petIdleAnimationFrame1",
@@ -93,7 +93,7 @@
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petIdleAnimationFrame2"
+        "displayName": "petIdleAnimationFrame1"
     },
     "myImages.petHappyAnimationFrame0": {
         "id": "myImages.petHappyAnimationFrame0",
@@ -101,7 +101,7 @@
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petHappyAnimationFrame1"
+        "displayName": "petHappyAnimationFrame0"
     },
     "myImages.petHappyAnimationFrame1": {
         "id": "myImages.petHappyAnimationFrame1",
@@ -109,7 +109,7 @@
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petHappyAnimationFrame2"
+        "displayName": "petHappyAnimationFrame1"
     },
     "myImages.petDanceAnimationFrame0": {
         "id": "myImages.petDanceAnimationFrame0",
@@ -117,7 +117,7 @@
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petDanceAnimationFrame1"
+        "displayName": "petDanceAnimationFrame0"
     },
     "myImages.petDanceAnimationFrame1": {
         "id": "myImages.petDanceAnimationFrame1",
@@ -125,7 +125,7 @@
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petDanceAnimationFrame2"
+        "displayName": "petDanceAnimationFrame1"
     },
     "myImages.petDanceAnimationFrame2": {
         "id": "myImages.petDanceAnimationFrame2",
@@ -133,7 +133,7 @@
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petDanceAnimationFrame3"
+        "displayName": "petDanceAnimationFrame2"
     },
     "myImages.petDanceAnimationFrame3": {
         "id": "myImages.petDanceAnimationFrame3",
@@ -141,7 +141,7 @@
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petDanceAnimationFrame4"
+        "displayName": "petDanceAnimationFrame3"
     },
     "myImages.petSleeping": {
         "id": "myImages.petSleeping",
@@ -175,13 +175,37 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "image13"
     },
+    "myImages.coinIcon": {
+        "id": "myImages.coinIcon",
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAFVVAAAAAABQVVUFAAAAAFVVVVUAAABQVVVVVQUAAFVVRFRVVQAAVUVERFVVAABVRUREVVUAAFVFRERVVQAAVVVEVFVVAABVVVVVVVUAAFBVVVVVBQAAAFVVVVUAAAAAUFVVBQAAAAAAVVUAAAAAAAAAAAAAAA==",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "image14"
+    },
+    "myImages.chickenIcon": {
+        "id": "myImages.chickenIcon",
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAABARAQAAAAAAERERAAAAABAREREBAAAAERETkQUEQAARERERBQRAABEREREBBEAAERETkQEEAAARERERAQAAABAREREBAAAAABEREQAAAAAAEBEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "image15"
+    },
+    "myImages.pillIcon": {
+        "id": "myImages.pillIcon",
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAREQEAAAAAIRIREQAAABAiEhERAQAAECISEREBAAAQIhIREQEAABAiEhERAQAAECISEREBAAAAIRIREQAAAAAQEREBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "dataEncoding": "base64",
+        "namespace": "myImages.",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "image16"
+    },
     "myImages.petSleepAnimationFrame0": {
         "id": "myImages.petSleepAnimationFrame0",
         "data": "hwQQABAAAAAAAADw/w8AAAAA8F9V9Q8AAABfVVVV9QAA8FVVVVVVDwBf9f9VVVUPAF/1/1VVVfXwVVVVVVVV9fBVVVUlUlX18FVVVSVSVfXwVVVfVVVV9QBf9f9VVVX1AF/1/1VVVQ8A8FVVVVVVDwAAX1VVVfUAAADwX1X1DwAAAADw/w8AAA==",
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petSleepAnimationFrame1"
+        "displayName": "petSleepAnimationFrame0"
     },
     "myImages.petSleepAnimationFrame1": {
         "id": "myImages.petSleepAnimationFrame1",
@@ -189,38 +213,38 @@
         "dataEncoding": "base64",
         "namespace": "myImages.",
         "mimeType": "image/x-mkcd-f4",
-        "displayName": "petSleepAnimationFrame2"
+        "displayName": "petSleepAnimationFrame1"
     },
-    "petIdleAnimation": {
-        "id": "petIdleAnimation",
-        "data": "NjQwMDEwMDAxMDAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBmZmZmMDAwMDAwMDAwMGZmNTU1NWZmMDAwMDAwZjA1NTU1NTU1NTBmMDAwMDVmNTU1NTU1NTVmNTAwZjA1NTExNTU1NTExNTUwZmYwNTVmMTUxMTUxZjU1MGY1ZjU1MTE1NTU1MTE1NWY1NWY1NTU1NTU1NTU1NTVmNTVmNTU1NTI1NTI1NTU1ZjU1ZjU1NTUyNTUyNTU1NWY1ZjA1NTU1NTU1NTU1NTUwZmYwNTU1NTU1NTU1NTU1MGYwMDVmNTU1NTU1NTVmNTAwMDBmMDVmNTU1NWY1MGYwMDAwMDBmMGZmZmYwZjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwZmZmZjAwMDAwMDAwMDBmZjU1NTVmZjAwMDAwMGYwNTU1NTU1NTUwZjAwMDA1ZjU1NTU1NTU1ZjUwMGYwNTVmZjU1NTVmZjU1MGZmMDU1MWY1ZmY1ZjE1NTBmNWY1NWZmNTU1NWZmNTVmNTVmNTU1NTU1NTU1NTU1ZjU1ZjU1NTUyNTUyNTU1NWY1NWY1NTU1MjU1MjU1NTVmNWYwNTU1NTU1NTU1NTU1MGZmMDU1NTU1NTU1NTU1NTBmMDA1ZjU1NTU1NTU1ZjUwMDAwZjA1ZjU1NTVmNTBmMDAwMDAwZjBmZmZmMGYwMDAw",
-        "dataEncoding": "base64",
-        "namespace": "myImages.",
+    "myImages.petIdleAnimation": {
+        "id": "myImages.petIdleAnimation",
         "mimeType": "application/mkcd-animation",
-        "displayName": "petIdleAnimation"
+        "dataEncoding": "json",
+        "namespace": "myImages.",
+        "displayName": "petIdleAnimation",
+        "data": "{\"frames\":[\"myImages.petIdleAnimationFrame0\",\"myImages.petIdleAnimationFrame1\"],\"interval\":500}"
     },
-    "petHappyAnimation": {
-        "id": "petHappyAnimation",
-        "data": "NjQwMDEwMDAxMDAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBmZmZmMDAwMDAwMDAwMGZmNTU1NWZmMDAwMDAwZjA1NTU1NTU1NTBmMDAwMDVmNTU1NTU1NTVmNTAwZjA1NTExNTU1NTExNTUwZmYwNTVmMTUxMTUxZjU1MGY1ZjU1MTE1NTU1MTE1NWY1NWY1NTU1MjU1MjU1NTVmNTVmNTU1NTIyMjI1NTU1ZjU1ZjU1NTUyMjIyNTU1NWY1ZjA1NTU1MjU1MjU1NTUwZmYwNTU1NTU1NTU1NTU1MGYwMDVmNTU1NTU1NTVmNTAwMDBmMDVmNTU1NWY1MGYwMDAwMDBmMGZmZmYwZjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwZmZmZjAwMDAwMDAwMDBmZjU1NTVmZjAwMDAwMGYwNTU1NTU1NTUwZjAwMDA1ZjU1NTU1NTU1ZjUwMGYwNTVmZjU1NTVmZjU1MGZmMDU1MWY1ZmY1ZjE1NTBmNWY1NWZmNTU1NWZmNTVmNTVmNTU1NTI1NTI1NTU1ZjU1ZjU1NTUyMjIyNTU1NWY1NWY1NTU1MjIyMjU1NTVmNWYwNTU1NTI1NTI1NTU1MGZmMDU1NTU1NTU1NTU1NTBmMDA1ZjU1NTU1NTU1ZjUwMDAwZjA1ZjU1NTVmNTBmMDAwMDAwZjBmZmZmMGYwMDAw",
-        "dataEncoding": "base64",
-        "namespace": "myImages.",
+    "myImages.petHappyAnimation": {
+        "id": "myImages.petHappyAnimation",
         "mimeType": "application/mkcd-animation",
-        "displayName": "petHappyAnimation"
+        "dataEncoding": "json",
+        "namespace": "myImages.",
+        "displayName": "petHappyAnimation",
+        "data": "{\"frames\":[\"myImages.petHappyAnimationFrame0\",\"myImages.petHappyAnimationFrame1\"],\"interval\":500}"
     },
-    "petDanceAnimation": {
-        "id": "petDanceAnimation",
-        "data": "NjQwMDEwMDAxMDAwMDQwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBmZmZmMDAwMDAwMDAwMGZmNTU1NWZmMDAwMDAwZjA1NTU1NTU1NTBmMDAwMDVmNTU1NTU1NTVmNTAwZjA1NTExNTU1NTExNTUwZmYwNTVmMTUxMTUxZjU1MGY1ZjU1MTE1NTU1MTE1NWY1NWY1NTU1MjU1MjU1NTVmNTVmNTU1NTIyMjI1NTU1ZjU1ZjU1NTUyMjIyNTU1NWY1ZjA1NTU1MjU1MjU1NTUwZmYwNTU1NTU1NTU1NTU1MGYwMDVmNTU1NTU1NTVmNTAwMDBmMDVmNTU1NWY1MGYwMDAwMDBmMGZmZmYwZjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwZjBmZjAwMDAwMDAwMDBmMDVmNTVmZjAwMDAwMDAwNWY1NTU1NTUwZjAwMDBmMDU1NTU1NTU1ZjUwMDAwNWYxNTUxNTUxNTUxMGYwMDVmMTUxZjU1ZjE1MTBmZjA1NTE1NTE1NTE1NTFmNWYwNTU1NTU1MjI1NTU1ZjVmMDU1NTUyNTIyNTI1NWY1ZjA1NTU1MjUyMjUyNTVmNTAwNWY1NTU1MjI1NTU1MGYwMDVmNTU1NTU1NTU1NTBmMDBmMDU1NTU1NTU1ZjUwMDAwMDBmZjU1NTU1NTBmMDAwMDAwMDBmZmZmMGYwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMGZmZmYwMDAwMDAwMDAwZmY1NTU1ZmYwMDAwMDBmMDU1NTU1NTU1MGYwMDAwNWY1NTU1NTU1NWY1MDBmMDU1MTE1NTU1MTE1NTBmZjA1NWYxNTExNTFmNTUwZjVmNTUxMTU1NTUxMTU1ZjU1ZjU1NTUyNTUyNTU1NWY1NWY1NTU1MjIyMjU1NTVmNTVmNTU1NTIyMjI1NTU1ZjVmMDU1NTUyNTUyNTU1NTBmZjA1NTU1NTU1NTU1NTUwZjAwNWY1NTU1NTU1NWY1MDAwMGYwNWY1NTU1ZjUwZjAwMDAwMGYwZmZmZjBmMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwZjBmZjAwMDAwMDAwMDBmMDVmNTVmZjAwMDAwMDAwNWY1NTU1NTUwZjAwMDBmMDU1NTU1NTU1ZjUwMDAwNWYxNTUxNTUxNTUxMGYwMDVmMTUxZjU1ZjE1MTBmMDA1ZjU1MTE1NTU1MTFmNTAwNWY1NTU1MjU1MjU1ZjUwMDVmNTU1NTIyMjI1NWY1MDA1ZjU1NTUyMjIyNTVmNTAwZjA1NTU1MjU1MjU1MGYwMGYwNTU1NTU1NTU1NTBmMDAwMDVmNTU1NTU1ZjUwMDAwMDBmMDVmNTVmNTBmMDAwMDAwMDBmMGZmMGYwMDAwMDA=",
-        "dataEncoding": "base64",
-        "namespace": "myImages.",
+    "myImages.petDanceAnimation": {
+        "id": "myImages.petDanceAnimation",
         "mimeType": "application/mkcd-animation",
-        "displayName": "petDanceAnimation"
+        "dataEncoding": "json",
+        "namespace": "myImages.",
+        "displayName": "petDanceAnimation",
+        "data": "{\"frames\":[\"myImages.petDanceAnimationFrame0\",\"myImages.petDanceAnimationFrame1\",\"myImages.petDanceAnimationFrame2\",\"myImages.petDanceAnimationFrame3\"],\"interval\":500}"
     },
-    "petSleepAnimation": {
-        "id": "petSleepAnimation",
-        "data": "NjQwMDEwMDAxMDAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBmZmZmMDAwMDAwMDAwMGZmNTU1NWZmMDAwMDAwZjA1NTU1NTU1NTBmMDAwMDVmNTU1NTU1NTVmNTAwZjA1NWZmNTU1NWZmNTUwZmYwNTVmZjU1ZjVmZjU1MGY1ZjU1ZmY1NTU1ZmY1NWY1NWY1NTU1NTU1NTU1NTVmNTVmNTU1NTI1NTI1NTU1ZjU1ZjU1NTUyNTUyNTU1NWY1ZjA1NTU1NTU1NTU1NTUwZmYwNTU1NTU1NTU1NTU1MGYwMDVmNTU1NTU1NTVmNTAwMDBmMDVmNTU1NWY1MGYwMDAwMDBmMGZmZmYwZjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwZmZmZjAwMDAwMDAwMDBmZjU1NTVmZjAwMDAwMGYwNTU1NTU1NTUwZjAwMDA1ZjU1NTU1NTU1ZjUwMGYwNTVmZjU1NTVmZjU1MGZmMDU1ZmY1NTU1ZmY1NTBmNWY1NWZmNTU1NWZmNTVmNTVmNTU1NTU1NTU1NTU1ZjU1ZjU1NTUyNTUyNTU1NWY1NWY1NTU1MjU1MjU1NTVmNWYwNTU1NTU1NTU1NTU1MGZmMDU1NTU1NTU1NTU1NTBmMDA1ZjU1NTU1NTU1ZjUwMDAwZjA1ZjU1NTVmNTBmMDAwMDAwZjBmZmZmMGYwMDAw",
-        "dataEncoding": "base64",
-        "namespace": "myImages.",
+    "myImages.petSleepAnimation": {
+        "id": "myImages.petSleepAnimation",
         "mimeType": "application/mkcd-animation",
-        "displayName": "petSleepAnimation"
+        "dataEncoding": "json",
+        "namespace": "myImages.",
+        "displayName": "petSleepAnimation",
+        "data": "{\"frames\":[\"myImages.petSleepAnimationFrame0\",\"myImages.petSleepAnimationFrame1\"],\"interval\":500}"
     }
 }

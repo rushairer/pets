@@ -685,7 +685,16 @@ function createMenuSprites() {
     // 创建金钱和库存显示精灵 - 移到左下角
     let moneyImg = image.create(menuBarWidth, menuBarHeight)
     moneyImg.fill(menuBarBgColor)
-    moneyImg.print("钱:" + money + " 食物:" + foodCount + " 药物:" + medicineCount, 3, 3, menuBarFontColor)  // 黄色文字，调整位置
+    // 用图标替换文字：金币、鸡腿、药丸（16x16）
+    // 金币
+    moneyImg.drawTransparentImage(assets.image`coinIcon`, 3, 1)
+    moneyImg.print("" + money, 21, 5, menuBarFontColor)
+    // 鸡腿（食物）
+    moneyImg.drawTransparentImage(assets.image`chickenIcon`, 60, 1)
+    moneyImg.print("" + foodCount, 78, 5, menuBarFontColor)
+    // 药丸（药物）
+    moneyImg.drawTransparentImage(assets.image`pillIcon`, 107, 1)
+    moneyImg.print("" + medicineCount, 125, 5, menuBarFontColor)
     let moneySprite = sprites.create(moneyImg, MenuKind)
     moneySprite.setPosition(menuBarPositionX, menuBarPositionY)  // 移到左下角
     menuSprites.push(moneySprite)
