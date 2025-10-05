@@ -108,6 +108,28 @@ function resetDefaults() {
     // 初始化等级与经验
     level = 1
     xp = 0
+
+    // 计数与领奖状态清零
+    dayCounter = 0
+    weekIndex = 0
+    dailyFeed = 0
+    dailyPlay = 0
+    dailyClean = 0
+    dailyHeal = 0
+    dailyWork = 0
+    weeklyWork = 0
+    weeklyRpsWin = 0
+    claimed_d_feed3 = false
+    claimed_d_play2 = false
+    claimed_d_clean1 = false
+    claimed_d_heal1 = false
+    claimed_d_work1 = false
+    claimed_w_work5 = false
+    claimed_w_rps3 = false
+    claimed_a_lvl3 = false
+    claimed_a_lvl5 = false
+    claimed_a_money500 = false
+
     currentHour = 8
     isNight = false
     dayNightCycle = 0
@@ -228,9 +250,9 @@ let menuSelectedFontBgColor = 2
 let menuTitleColor = 15
 let menuBarBgColor = 6
 let menuBarFontColor = 5
-let menuTitleHeight = 14
+let menuTitleHeight = 10
 let menuTitlePositionX = 80
-let menuTitlePositionY = 14
+let menuTitlePositionY = 10
 let menuBarWidth = 160
 let menuBarHeight = 18
 let menuBarPositionX = 80
@@ -1519,7 +1541,7 @@ function showLevelMenu() {
     infoImg.fillRect(5, menuBarHeight - 4, barW, 2, 1)
     infoImg.fillRect(5, menuBarHeight - 4, filled, 2, 7)
     const infoSprite = sprites.create(infoImg, MenuKind)
-    infoSprite.setPosition(menuBarPositionX, 25)
+    infoSprite.setPosition(menuBarPositionX, 21)
     levelMenuSprites.push(infoSprite)
 
     // 页签（每日/每周/成就）+ 徽标（可领数量）
@@ -1542,7 +1564,7 @@ function showLevelMenu() {
         tabsImg.print(tabNames[i], x, 3, sel ? menuSelectedFontColor : menuFontColor)
     }
     const tabsSprite = sprites.create(tabsImg, MenuKind)
-    tabsSprite.setPosition(menuBarPositionX, 43)
+    tabsSprite.setPosition(menuBarPositionX, 39)
     levelMenuSprites.push(tabsSprite)
 
     // 任务列表（固定光标在中间行的滚动视窗）
