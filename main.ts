@@ -951,7 +951,7 @@ function createShopMenuSprites() {
     moneySprite.setPosition(menuBarPositionX, 30)
     shopMenuSprites.push(moneySprite)
     
-    // 商品选项
+    // 商品选项（前置图标）
     for (let i = 0; i < shopItems.length; i++) {
         let x = 80
         let y = 50 + i * 25
@@ -960,10 +960,24 @@ function createShopMenuSprites() {
         
         if (i == selectedShopItem) {
             itemImg.fill(menuSelectedFontBgColor)
-            itemImg.print(shopItems[i].name, 15, 2, menuSelectedFontColor)
+            // 绘制类型图标
+            if (shopItems[i].type == "food") {
+                itemImg.drawTransparentImage(assets.image`chickenIcon`, 2, 1)
+            } else if (shopItems[i].type == "medicine") {
+                itemImg.drawTransparentImage(assets.image`pillIcon`, 2, 1)
+            }
+            // 文本右移以避开图标
+            itemImg.print(shopItems[i].name, 22, 2, menuSelectedFontColor)
         } else {
             itemImg.fill(menuFontBgColor)
-            itemImg.print(shopItems[i].name, 15, 2, menuFontColor)
+            // 绘制类型图标
+            if (shopItems[i].type == "food") {
+                itemImg.drawTransparentImage(assets.image`chickenIcon`, 2, 1)
+            } else if (shopItems[i].type == "medicine") {
+                itemImg.drawTransparentImage(assets.image`pillIcon`, 2, 1)
+            }
+            // 文本右移以避开图标
+            itemImg.print(shopItems[i].name, 22, 2, menuFontColor)
         }
         
         let itemSprite = sprites.create(itemImg, MenuKind)
