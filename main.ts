@@ -61,6 +61,30 @@ let configMenuState = MenuState.Closed
 let selectedDifficultyIndex = 1   // 默认普通
 let nameMenuState = MenuState.Closed
 let selectedNameIndex = 0
+// 昵称随机：洗牌序列，保证全量均匀覆盖并避免短期重复
+let nameRandomOrder: number[] = []
+let nameRandomPos = 0
+function rebuildNameRandomOrder() {
+    nameRandomOrder = []
+    for (let i = 0; i < nameCandidates.length; i++) nameRandomOrder.push(i)
+    // Fisher-Yates 洗牌
+    for (let i = nameRandomOrder.length - 1; i > 0; i--) {
+        const j = randint(0, i)
+        const t = nameRandomOrder[i]
+        nameRandomOrder[i] = nameRandomOrder[j]
+        nameRandomOrder[j] = t
+    }
+    nameRandomPos = 0
+}
+function getNextRandomNameIndex(): number {
+    if (nameCandidates.length <= 0) return 0
+    if (nameRandomOrder.length != nameCandidates.length || nameRandomPos >= nameRandomOrder.length) {
+        rebuildNameRandomOrder()
+    }
+    const idx = nameRandomOrder[nameRandomPos]
+    nameRandomPos++
+    return idx
+}
 
 // 存档功能
 const SAVE_FLAG_KEY = "pet_saved_flag"
@@ -1272,12 +1296,7 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, () => {
             showDifficultyMenu()
         }
     } else if (nameMenuState == MenuState.Open) {
-        if (selectedNameIndex > 0) {
-            selectedNameIndex--
-            sprites.destroyAllSpritesOfKind(MenuKind)
-            nameMenuState = MenuState.Closed
-            showNameMenu()
-        }
+        // 昵称菜单不支持上下选择，忽略
     }
 })
 
@@ -1305,12 +1324,7 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, () => {
             showDifficultyMenu()
         }
     } else if (nameMenuState == MenuState.Open) {
-        if (selectedNameIndex < Math.min(6, nameCandidates.length) - 1) {
-            selectedNameIndex++
-            sprites.destroyAllSpritesOfKind(MenuKind)
-            nameMenuState = MenuState.Closed
-            showNameMenu()
-        }
+        // 昵称菜单不支持上下选择，忽略
     }
 })
 
@@ -1338,8 +1352,10 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, () => {
         hideShopMenu()
         showMenu()
     } else if (nameMenuState == MenuState.Open) {
-        selectedNameIndex = randint(0, Math.min(6, nameCandidates.length) - 1)
+        selectedNameIndex = getNextRandomNameIndex()
         sprites.destroyAllSpritesOfKind(MenuKind)
+        // 先关闭状态再重建，避免 showNameMenu 提前 return
+        nameMenuState = MenuState.Closed
         showNameMenu()
     }
 })
@@ -1561,6 +1577,8 @@ function showDifficultyMenu() {
 function proceedToNameMenu() {
     sprites.destroyAllSpritesOfKind(MenuKind)
     configMenuState = MenuState.Closed
+    // 进入昵称菜单前，随机一个初始昵称（全量均匀）
+    selectedNameIndex = getNextRandomNameIndex()
     showNameMenu()
 }
 
@@ -1577,22 +1595,16 @@ function showNameMenu() {
     const title = sprites.create(titleImg, MenuKind)
     title.setPosition(menuTitlePositionX, menuTitlePositionY)
 
-    for (let i = 0; i < 6 && i < nameCandidates.length; i++) {
-        const itemImg = image.create(60, 18)
-        if (i == selectedNameIndex) {
-            itemImg.fill(menuSelectedFontBgColor)
-            itemImg.print(nameCandidates[i], 6, 2, menuSelectedFontColor)
-        } else {
-            itemImg.fill(menuFontBgColor)
-            itemImg.print(nameCandidates[i], 6, 2, menuFontColor)
-        }
-        const s = sprites.create(itemImg, MenuKind)
-        s.setPosition(80, 40 + i * 18 + (i >= 3 ? 7 : 0))
-    }
+    // 仅显示当前随机昵称（不再支持上下选择列表）
+    const itemImg = image.create(80, 20)
+    itemImg.fill(menuSelectedFontBgColor)
+    itemImg.print(nameCandidates[selectedNameIndex] || "未命名", 10, 4, menuSelectedFontColor)
+    const s = sprites.create(itemImg, MenuKind)
+    s.setPosition(80, 60)
 
     const hintImg = image.create(menuBarWidth, menuBarHeight)
     hintImg.fill(menuBarBgColor)
-    hintImg.print("上下选择 A确认 B随机", 3, 3, menuBarFontColor)
+    hintImg.print("A确认 B随机", 3, 3, menuBarFontColor)
     const hint = sprites.create(hintImg, MenuKind)
     hint.setPosition(menuBarPositionX, menuBarPositionY)
 }
