@@ -42,30 +42,35 @@ const SECONDS_PER_HOUR = 30
 
 // DEBUG 开关（发布前改为 false 关闭调试功能）
 const DEBUG_MODE = true
+
+const SLEEP_MAX_MS = 30000 // 睡眠模式最大时长
+
 let lastDebugResetTime = 0  // 调试重置去抖时间戳
 let lastCheatTime = 0       // 金手指加钱去抖时间戳
 
 // 游戏变量
 let pet: Sprite = null
-let hunger = 50
-let happiness = 50
-let health = 50
-let cleanliness = 50
-let energy = 50  // 新增：精力值
-let money = 100  // 新增：金钱系统
-let foodCount = 3  // 新增：食物数量
-let medicineCount = 2  // 新增：药物数量
-let lastUpdateTime = 0
-let gameRunning = true
+let hunger = 50 // 饥饿值
+let happiness = 50 // 快乐值
+let health = 50 // 健康值
+let cleanliness = 50 // 清洁值
+let energy = 50  // 精力值
+let money = 100  // 金钱
+let foodCount = 3  // 食物数量
+let medicineCount = 2  // 药物数量
+let lastUpdateTime = 0 // 上次更新时间戳
+let gameRunning = true // 游戏运行中标志
+
+
 // 睡眠模式标志：通过菜单进入睡觉后置为 true，按 B 唤醒或精力满则结束
-const SLEEP_MAX_MS = 30000
 let sleeping = false
 let sleepSayToggle = true
 
-// 新增：难度与昵称配置
+// 难度与昵称配置
 let currentDifficulty: Difficulty = Difficulty.Normal
 let petName = "小可爱"
 const nameCandidates = ["小米", "可可", "豆豆", "皮皮", "团子", "球球", "花生", "奶糖", "乐乐", "萌萌", "春生"]
+
 let configMenuState = MenuState.Closed
 let selectedDifficultyIndex = 1   // 默认普通
 let nameMenuState = MenuState.Closed
@@ -73,6 +78,7 @@ let selectedNameIndex = 0
 // 昵称随机：洗牌序列，保证全量均匀覆盖并避免短期重复
 let nameRandomOrder: number[] = []
 let nameRandomPos = 0
+
 function rebuildNameRandomOrder() {
     nameRandomOrder = []
     for (let i = 0; i < nameCandidates.length; i++) nameRandomOrder.push(i)
@@ -152,6 +158,7 @@ function resetDefaults() {
     claimed_a_lvl45 = false
     claimed_a_lvl50 = false
     // 累计500次成就重置
+    // 新增成就Setup2.1
     claimed_a_feed500 = false
     claimed_a_play500 = false
     claimed_a_heal500 = false
@@ -160,6 +167,7 @@ function resetDefaults() {
     claimed_a_game500 = false
     claimed_a_shop500 = false
     claimed_a_sleep500 = false
+    claimed_a_adventure500 = false
 
     // 累计计数清零
     // 新增成就Setup2
@@ -472,15 +480,9 @@ let hungerBar: Sprite = null
 let happinessBar: Sprite = null
 let healthBar: Sprite = null
 let cleanlinessBar: Sprite = null
-let energyBar: Sprite = null  // 新增：精力条
+let energyBar: Sprite = null  // 精力条
 let topTextSprite: Sprite = null
 let bottomTextSprite: Sprite = null
-
-// 按钮精灵
-let feedButton: Sprite = null
-let playButton: Sprite = null
-let medicineButton: Sprite = null
-let cleanButton: Sprite = null
 
 // 创建UI种类
 const UIKind = SpriteKind.create()
@@ -512,7 +514,7 @@ function updateDayNightBackground() {
         scene.setBackgroundImage(null)
         scene.setBackgroundColor(8)
         // 降低整体亮度以“变暗”，不持久化到系统设置
-        screen.setBrightness(120)
+        screen.setBrightness(60)
         // 添加星星效果
         for (let i = 0; i < 8; i++) {
             let star = sprites.create(image.create(1, 1), DecorationKind)
@@ -1491,7 +1493,7 @@ function executeMenuItem() {
     menuItems[selectedMenuItem].action()
 }
 
-// 新增功能：宠物打工
+// 宠物打工
 function petWork() {
     if (energy < 20) {
         game.splash("精力不足，无法工作！")
