@@ -480,7 +480,7 @@ let menuItems = [
     { name: "治疗", icon: "💊", action: () => healPet() },
     { name: "清洁", icon: "🛁", action: () => cleanPet() },
     { name: "睡觉", icon: "😴", action: () => petSleep() },
-    { name: "说话", icon: "💬", action: () => petRandomTalk() },
+    { name: "探险", icon: "🧭", action: () => adventureExplore() },
     { name: "打工", icon: "💼", action: () => petWork() },
     { name: "游戏", icon: "🎮", action: () => playMiniGame() },
     { name: "购物", icon: "🛒", action: () => openShop() }
@@ -1141,6 +1141,221 @@ function petRandomTalk() {
     let dialogue = getRandomDialogue()
     pet.sayText(dialogue, 2000, false)
     music.playTone(294, 300)
+}
+
+/** 探险模式：随机事件（奖励与消耗结合） */
+function adventureExplore() {
+    if (!pet) return
+
+    // 基础精力消耗（进入探险）
+    if (energy < 10) {
+        game.splash("精力太低，无法探险！")
+        pet.sayText("好累，先休息一下吧...", 1800, false)
+        music.playTone(175, 300)
+        return
+    }
+    const baseCost = randint(8, 15)
+    energy = Math.max(0, energy - baseCost)
+
+    // 事件表（通过掷点选择）
+    const roll = randint(1, 100)
+    let msg = ""
+    let good = true
+
+    // 结算助手（带边界）
+    const clamp01 = (v: number) => Math.max(0, Math.min(100, v))
+    const dec = (v: number, d: number) => Math.max(0, v - d)
+    const inc = (v: number, d: number) => Math.min(100, v + d)
+
+    // 执行事件
+    if (roll <= 20) {
+        // 宝藏
+        const earned = randint(20, 60)
+        money += earned
+        happiness = inc(happiness, 6)
+        gainXP(8)
+        msg = "探险发现小宝藏！+" + earned + "金币，快乐+6，XP+8"
+        effects.confetti.startScreenEffect(600)
+        music.playTone(523, 250)
+    } else if (roll <= 35) {
+        // 捡到食物
+        foodCount++
+        hunger = inc(hunger, 10)
+        happiness = inc(happiness, 3)
+        gainXP(5)
+        msg = "捡到食物！饥饿+10，快乐+3，食物+1，XP+5"
+        effects.bubbles.startScreenEffect(500)
+        music.playTone(440, 220)
+    } else if (roll <= 45) {
+        // 找到药物
+        medicineCount++
+        health = inc(health, 8)
+        gainXP(6)
+        msg = "找到药物！健康+8，药物+1，XP+6"
+        effects.confetti.startScreenEffect(500)
+        music.playTone(392, 220)
+    } else if (roll <= 60) {
+        // 泥泞路
+        cleanliness = dec(cleanliness, randint(12, 25))
+        happiness = dec(happiness, 3)
+        good = false
+        msg = "路况泥泞，弄脏了… 清洁下降，快乐-3"
+        effects.clouds.startScreenEffect(600)
+        music.playTone(220, 250)
+    } else if (roll <= 62 && isNight) {
+        // 夜行受寒：夜晚更易受寒，健康与精力下降更明显
+        const hDown = randint(4, 9)
+        const eDown = randint(8, 14)
+        health = dec(health, hDown)
+        energy = dec(energy, eDown)
+        happiness = dec(happiness, 2)
+        good = false
+        msg = "夜行受寒… 健康-" + hDown + "，精力-" + eDown + "，快乐-2"
+        effects.clouds.startScreenEffect(600)
+        music.playTone(208, 240)
+    } else if (roll <= 70) {
+        // 轻伤
+        const dmg = randint(8, 18)
+        health = dec(health, dmg)
+        happiness = dec(happiness, 4)
+        good = false
+        msg = "不慎擦伤，健康-" + dmg + "，快乐-4"
+        effects.hearts.startScreenEffect(400)
+        music.playTone(196, 280)
+    } else if (roll <= 76) {
+        // 野兽追逐：大量消耗精力与少量快乐
+        const run = randint(10, 20)
+        energy = dec(energy, run)
+        happiness = dec(happiness, 3)
+        good = false
+        msg = "被小野兽追了一段路！精力-" + run + "，快乐-3"
+        effects.clouds.startScreenEffect(500)
+        music.playTone(233, 220)
+    } else if (roll <= 80) {
+        // 遇到强盗
+        const lost = randint(15, 40)
+        money = Math.max(0, money - lost)
+        happiness = dec(happiness, 5)
+        good = false
+        msg = "遇到强盗！金币-" + lost + "，快乐-5"
+        effects.clouds.startScreenEffect(550)
+        music.playTone(165, 300)
+    } else if (roll <= 86) {
+        // 远行偶遇：随机提升两项状态但额外耗精
+        const extra = randint(8, 15)
+        energy = dec(energy, extra)
+        // 随机选择两项不同属性提升
+        const attrs = [0, 1, 2, 3, 4] // 0饥饿、1快乐、2健康、3清洁、4精力
+        const aIdx = randint(0, attrs.length - 1)
+        let bIdx = randint(0, attrs.length - 1)
+        while (bIdx == aIdx) {
+            bIdx = randint(0, attrs.length - 1)
+        }
+        const a = attrs[aIdx]
+        const b = attrs[bIdx]
+        const up = randint(6, 12)
+        if (a == 0 || b == 0) hunger = inc(hunger, up)
+        if (a == 1 || b == 1) happiness = inc(happiness, up)
+        if (a == 2 || b == 2) health = inc(health, up)
+        if (a == 3 || b == 3) cleanliness = inc(cleanliness, up)
+        if (a == 4 || b == 4) energy = inc(energy, Math.max(4, up - 2)) // 若抽到精力，回少量
+        gainXP(6)
+        msg = "远行偶遇，结识新朋友！两项属性+" + up + "，额外消耗精力-" + extra + "，XP+6"
+        effects.confetti.startScreenEffect(600)
+        music.playTone(370, 240)
+    } else if (roll <= 90) {
+        // 林间午后（回精）
+        const recover = randint(12, 25)
+        energy = inc(energy, recover)
+        health = inc(health, 3)
+        happiness = inc(happiness, 4)
+        msg = "在林间稍作休息，精力+" + recover + "，健康+3，快乐+4"
+        effects.hearts.startScreenEffect(700)
+        music.playTone(330, 220)
+    } else if (roll <= 94) {
+        // 好心村民请餐
+        hunger = inc(hunger, 25)
+        happiness = inc(happiness, 10)
+        gainXP(7)
+        msg = "好心人请吃饭！饥饿+25，快乐+10，XP+7"
+        effects.bubbles.startScreenEffect(600)
+        music.playTone(494, 250)
+    } else if (roll <= 96) {
+        // 秘密商人：有食物则换得金币
+        if (foodCount > 0) {
+            const earn = randint(15, 35)
+            foodCount--
+            money += earn
+            happiness = inc(happiness, 2)
+            msg = "遇到秘密商人，用1个食物换得+" + earn + "金币，快乐+2"
+            effects.confetti.startScreenEffect(500)
+            music.playTone(349, 220)
+        } else {
+            msg = "遇到秘密商人，但你没有食物可以交易…"
+            music.playTone(220, 200)
+        }
+    } else if (roll <= 98) {
+        // 急救援助：消耗药物换取大量XP
+        if (medicineCount > 0) {
+            const gain = randint(12, 20)
+            medicineCount--
+            gainXP(gain)
+            health = inc(health, 5)
+            happiness = inc(happiness, 4)
+            msg = "向路人提供急救援助！消耗1药物，XP+" + gain + "，健康+5，快乐+4"
+            effects.confetti.startScreenEffect(600)
+            music.playTone(415, 240)
+        } else {
+            msg = "路过急救场景，但你没有药物……"
+            happiness = dec(happiness, 2)
+            music.playTone(220, 200)
+        }
+    } else {
+        // 神秘祭坛（权衡增减）
+        const buff = randint(1, 5)
+        const nerf = randint(1, 4)
+        const deltaUp = randint(12, 22)
+        const deltaDn = randint(8, 15)
+        // 增益
+        if (buff == 1) hunger = inc(hunger, deltaUp)
+        else if (buff == 2) happiness = inc(happiness, deltaUp)
+        else if (buff == 3) health = inc(health, deltaUp)
+        else if (buff == 4) cleanliness = inc(cleanliness, deltaUp)
+        else energy = inc(energy, deltaUp)
+        // 减益（不同属性）
+        if (nerf == 1) {
+            const lost = randint(10, 25)
+            money = Math.max(0, money - lost)
+            msg = "神秘祭坛赐福但索取贡品… 金币-" + lost + "，另有一项属性大幅提升！"
+        } else if (nerf == 2) {
+            cleanliness = dec(cleanliness, deltaDn)
+            msg = "祭坛试炼：清洁-" + deltaDn + "，但另一项属性大幅提升！"
+        } else if (nerf == 3) {
+            happiness = dec(happiness, deltaDn)
+            msg = "祭坛试炼：快乐-" + deltaDn + "，但另一项属性大幅提升！"
+        } else {
+            health = dec(health, deltaDn)
+            msg = "祭坛试炼：健康-" + deltaDn + "，但另一项属性大幅提升！"
+        }
+        gainXP(10)
+        effects.confetti.startScreenEffect(800)
+        music.playTone(587, 260)
+    }
+
+    // 状态边界与刷新
+    hunger = clamp01(hunger)
+    happiness = clamp01(happiness)
+    health = clamp01(health)
+    cleanliness = clamp01(cleanliness)
+    energy = clamp01(energy)
+
+    updateStatusBars()
+    updatePetState()
+    saveProgress()
+
+    // 文本与语音反馈
+    game.showLongText(msg + "\n(本次消耗精力-" + baseCost + ")", DialogLayout.Center)
+    pet.sayText(good ? "探险真有趣！" : "有点波折…", 1500, false)
 }
 
 
